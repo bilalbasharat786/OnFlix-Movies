@@ -11,7 +11,9 @@ const app = express();
 // Middlewares
 app.use(cors());
 app.use(express.json());
-
+app.get('/', (req, res) => {
+  res.send('Mera Backend Vercel Par Successfully Chal Raha Hai! 🚀');
+});
 // Logger
 app.use((req, res, next) => {
     console.log(`>> Incoming Request: ${req.method} ${req.url}`);
