@@ -13,6 +13,10 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    customUrl: { 
+        type: String, 
+        default: "" 
+    },
     description: {
         type: String,
         default: ""

@@ -21,6 +21,9 @@ const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/${id}`);
   }, [id]);
 
   if (!movie) return <div className="text-white text-center mt-20">Loading Movie...</div>;
+  const videoLink = movie.customUrl && movie.customUrl !== "" 
+    ? movie.customUrl 
+    : `https://vsembed.ru/embed/movie/${movie.imdbId}`;
 
   return (
     <div className="bg-black min-h-screen text-white flex flex-col items-center justify-center relative">
@@ -31,12 +34,11 @@ const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/${id}`);
       </Link>
 
   {/* Video Player */}
-      <iframe 
-        src={`https://vsembed.ru/embed/movie/${movie.imdbId}`}
+  <iframe 
+        src={videoLink} // Ab link yahan se aayega
         className="w-full h-screen"
         frameBorder="0"
         allowFullScreen
-
       ></iframe>
       
     </div>
