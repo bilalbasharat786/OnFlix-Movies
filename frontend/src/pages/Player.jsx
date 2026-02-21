@@ -11,7 +11,7 @@ const Player = () => {
     const fetchMovie = async () => {
       try {
         // Backend se specific movie mangwano
-const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/${id}`);
+const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/${id}`);
         setMovie(res.data);
       } catch (error) {
         console.error("Error fetching movie:", error);

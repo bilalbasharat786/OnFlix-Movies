@@ -12,7 +12,7 @@ const Home = () => {
     const fetchMovies = async () => {
       try {
         // Tumhara Backend URL
-const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/all`);
+const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/all`);
         setMovies(res.data);
       } catch (error) {
         console.error("Error fetching movies:", error);

@@ -24,7 +24,7 @@ const AddMovie = () => {
     setLoading(true);
 
     try {
-const response = await axios.post(`${import.meta.env.VITE_API_URL}/movies/add`, movie);
+const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, movie);
       
       if (response.status === 201) {
         toast.success("Movie Added Successfully! 🚀");
