@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import movieRoutes from './routes/movieRoutes.js'; // .js lagana mat bhoolna
+import movieRoutes from './routes/movieRoutes.js';
 
 dotenv.config();
 
