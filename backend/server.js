@@ -9,8 +9,25 @@ dotenv.config();
 const app = express();
 
 // Middlewares
-app.use(cors());
+
 app.use(express.json());
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://on-flix-movies-a7we.vercel.app/',
+  'https://on-flix-movies.vercel.app/'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log("Blocked by CORS:", origin); // Console mein pata chalega kon block hua
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.get('/', (req, res) => {
   res.send('Mera Backend Vercel Par Successfully Chal Raha Hai! 🚀');
 });
