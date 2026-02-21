@@ -3,20 +3,70 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 const AddMovie = () => {
-  // === CORRECTION 1: State mein 'streamUrl' hata kar 'imdbId' lagana hai ===
   const [movie, setMovie] = useState({
     title: '',
     posterUrl: '',
-    imdbId: '', // <-- Ye change zaroori tha
+    imdbId: '',
     description: '',
     year: new Date().getFullYear(),
     language: 'Hindi'
   });
 
   const [loading, setLoading] = useState(false);
+  const [fetchingData, setFetchingData] = useState(false);
+
+  // Tumhari TMDB API Key
+  const TMDB_API_KEY = "944a4dcfa30d2998783dd7ba8ba5c664";
 
   const handleChange = (e) => {
     setMovie({ ...movie, [e.target.name]: e.target.value });
+  };
+
+  // === MAGIC FUNCTION: IMDB ID se Pura Data Nikaalo ===
+  const fetchTMDBDetails = async () => {
+    if (!movie.imdbId) {
+      toast.warning("Pehle IMDB ID likhein! ⚠️");
+      return;
+    }
+
+    setFetchingData(true);
+    try {
+      // TMDB API URL (IMDB ID se search karne ke liye)
+      const tmdbUrl = `https://api.themoviedb.org/3/find/${movie.imdbId}?external_source=imdb_id&api_key=${TMDB_API_KEY}`;
+      const res = await axios.get(tmdbUrl);
+
+      // Agar movie mil jaye
+      if (res.data.movie_results && res.data.movie_results.length > 0) {
+        const tmdbMovie = res.data.movie_results[0];
+        
+        // TMDB sirf aadhi image ka link deta hai, humein baaki khud lagana parta hai
+        const fullPosterUrl = tmdbMovie.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}` 
+          : '';
+        
+        // Release date se sirf Saal (Year) nikalna
+        const releaseYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : 2026;
+
+        // Form ko Auto-Fill kardo
+        setMovie({
+          ...movie, 
+          title: tmdbMovie.title || '',
+          posterUrl: fullPosterUrl,
+          description: tmdbMovie.overview || '',
+          year: releaseYear,
+          language: tmdbMovie.original_language === 'hi' ? 'Hindi' : tmdbMovie.original_language === 'en' ? 'English' : 'Dual Audio'
+        });
+
+        toast.success("Magic! ✨ Movie Data Auto-Filled!");
+      } else {
+        toast.error("Is ID ki movie TMDB par nahi mili ❌");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Data laane mein masla aya ❌");
+    } finally {
+      setFetchingData(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -24,11 +74,11 @@ const AddMovie = () => {
     setLoading(true);
 
     try {
-const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, movie);
+      // Tumhara Vercel wala Live Backend URL use hoga (Environment Variable se)
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/movies/add`, movie);
       
       if (response.status === 201) {
         toast.success("Movie Added Successfully! 🚀");
-        // === CORRECTION 2: Reset karte waqt bhi 'imdbId' khaali karna hai ===
         setMovie({
           title: '', posterUrl: '', imdbId: '', description: '', year: 2026, language: 'Hindi'
         });
@@ -47,14 +97,34 @@ const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/ad
       
       <form onSubmit={handleSubmit} className="space-y-4">
         
+        {/* IMDB ID Input & Fetch Button (SABSE UPAR) */}
+        <div>
+          <label className="block text-gray-400 mb-1">1. Paste IMDB ID First</label>
+          <div className="flex gap-2">
+            <input 
+              type="text" name="imdbId" required
+              value={movie.imdbId} onChange={handleChange}
+              className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-red-500"
+              placeholder="e.g. tt12844910"
+            />
+            <button 
+              type="button" 
+              onClick={fetchTMDBDetails}
+              disabled={fetchingData}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold whitespace-nowrap"
+            >
+              {fetchingData ? "Fetching..." : "Fetch Auto Data ✨"}
+            </button>
+          </div>
+        </div>
+
         {/* Title */}
         <div>
           <label className="block text-gray-400 mb-1">Movie Title</label>
           <input 
             type="text" name="title" required
             value={movie.title} onChange={handleChange}
-            className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-red-500"
-            placeholder="e.g. Pathaan"
+            className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
           />
         </div>
 
@@ -64,19 +134,7 @@ const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/ad
           <input 
             type="text" name="posterUrl" required
             value={movie.posterUrl} onChange={handleChange}
-            className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-red-500"
-            placeholder="https://cloudinary..."
-          />
-        </div>
-
-        {/* IMDB ID Input */}
-        <div>
-          <label className="block text-gray-400 mb-1">IMDB ID (e.g. tt1234567)</label>
-          <input 
-            type="text" name="imdbId" required // <-- Name 'imdbId' hona chahiye (Sahi tha)
-            value={movie.imdbId} onChange={handleChange}
-            className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-red-500"
-            placeholder="Paste IMDB ID here (e.g. tt12844910)"
+            className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
           />
         </div>
 
@@ -107,9 +165,9 @@ const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/ad
         <div>
           <label className="block text-gray-400 mb-1">Description</label>
           <textarea 
-            name="description" rows="3"
+            name="description" rows="5"
             value={movie.description} onChange={handleChange}
-            className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-red-500"
+            className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
           ></textarea>
         </div>
 
@@ -118,7 +176,7 @@ const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/ad
           disabled={loading}
           className={`w-full py-3 mt-4 font-bold text-white rounded transition ${loading ? 'bg-gray-600' : 'bg-red-600 hover:bg-red-700'}`}
         >
-          {loading ? "Saving..." : "Add Movie"}
+          {loading ? "Saving to Database..." : "Add Movie to Website"}
         </button>
 
       </form>
