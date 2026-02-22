@@ -65,11 +65,13 @@ const Player = () => {
       )}
 
       {/* Video Player */}
+    {/* Video Player */}
       <iframe 
         src={videoLink}
-        className="w-full h-screen z-10"
+        className="w-full h-[100dvh] z-10" 
         frameBorder="0"
         allowFullScreen
+        allow="autoplay; fullscreen"
       ></iframe>
       
     </div>
