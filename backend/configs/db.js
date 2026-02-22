@@ -1,19 +1,21 @@
 import mongoose from "mongoose";
 
 const connectDB = async () => {
-  mongoose.connection.on("connected", () => {
-    console.log("Movie Database Connected Successfully 🚀");
-  });
-
-  mongoose.connection.on("error", (err) => {
-    console.log("Database connection error:", err);
-  });
+  // === VERCEL SERVERLESS MAGIC LINE (Jo pichli baar reh gayi thi) ===
+  if (mongoose.connection.readyState >= 1) {
+    console.log("Database Pehle Se Connected Hai (Cached) ⚡");
+    return;
+  }
 
   try {
-    // Apne Vercel environment variable ka naam yahan likho (e.g., MONGO_URI)
-    await mongoose.connect(`${process.env.MONGO_URI}/movies`);
+    // Agar connection nahi hai, tabhi naya connection banao
+    await mongoose.connect(`${process.env.MONGO_URI}/movies`, {
+      serverSelectionTimeoutMS: 5000, // 5 second se zyada wait na kare
+      maxPoolSize: 10, // Vercel ko overload hone se bachaye
+    });
+    console.log("Movie Database Connected Successfully 🚀");
   } catch (error) {
-    console.error("Connection attempt failed:", error);
+    console.error("Database connection error:", error);
   }
 };
 
