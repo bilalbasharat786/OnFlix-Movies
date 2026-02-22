@@ -11,7 +11,7 @@ const connectDB = async () => {
 
   try {
     // Apne Vercel environment variable ka naam yahan likho (e.g., MONGO_URI)
-    await mongoose.connect(`${process.env.MONGO_URI}`);
+    await mongoose.connect(`${process.env.MONGO_URI}/movies`);
   } catch (error) {
     console.error("Connection attempt failed:", error);
   }
