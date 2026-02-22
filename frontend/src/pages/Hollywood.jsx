@@ -14,7 +14,7 @@ const Hollywood = () => {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/movies/all`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/all`);
         setMovies(res.data);
       } catch (error) {
         console.error("Error fetching movies:", error);
