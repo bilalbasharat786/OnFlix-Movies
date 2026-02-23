@@ -63,3 +63,24 @@ export const getMovieById = async (req, res) => {
         res.status(500).json(error);
     }
 };
+export const updateMovie = async (req, res) => {
+    try {
+        const { title, url, year, category, poster } = req.body;
+        
+        // Movie dhoond kar naya data update karega
+        const updatedMovie = await Movie.findByIdAndUpdate(
+            req.params.id,
+            { title, url, year, category, poster },
+            { new: true } // Yeh isliye lagate hain taake update hone ke baad naya data wapis mile
+        );
+
+        if (!updatedMovie) {
+            return res.status(404).json({ message: "Movie not found" });
+        }
+        
+        res.status(200).json({ message: "Movie updated successfully!", updatedMovie });
+    } catch (error) {
+        console.error("Update error:", error);
+        res.status(500).json({ error: "Movie update karne mein masla aagaya" });
+    }
+};
