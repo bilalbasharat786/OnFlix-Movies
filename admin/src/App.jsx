@@ -5,7 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Components aur Pages Import kiye hain
-import AdminNavbar from './components/AdminNavbar'; // Tumhare components folder se
+import AdminNavbar from './components/Navbar'; // Tumhare components folder se
 import AddMovie from './pages/AddMovie';
 import ManageMovies from './pages/ManageMovies'; // Tumhare pages folder se
 
