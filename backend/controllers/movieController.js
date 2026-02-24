@@ -63,15 +63,18 @@ export const getMovieById = async (req, res) => {
         res.status(500).json(error);
     }
 };
+// 5. Update Movie Details (FIXED CODE)
 export const updateMovie = async (req, res) => {
     try {
-        const { title, url, year, category, poster } = req.body;
+        // 🔥 ASAL MASLA YAHAN THA! 
+        // Ab humne exact wahi spelling aur naam likhe hain jo AddMovie aur Database mein hain
+        const { title, posterUrl, imdbId, customUrl, description, year, language } = req.body;
         
-        // Movie dhoond kar naya data update karega
+        // Movie dhoond kar naya exact data update karega
         const updatedMovie = await Movie.findByIdAndUpdate(
             req.params.id,
-            { title, url, year, category, poster },
-            { new: true } // Yeh isliye lagate hain taake update hone ke baad naya data wapis mile
+            { title, posterUrl, imdbId, customUrl, description, year, language },
+            { new: true } 
         );
 
         if (!updatedMovie) {
