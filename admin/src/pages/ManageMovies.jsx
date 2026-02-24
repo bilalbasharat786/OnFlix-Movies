@@ -6,16 +6,56 @@ export default function ManageMovies({ categoryTitle }) {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // === NAYI STATE: Background Checker (Status save karne ke liye) ===
+  const [vidStatus, setVidStatus] = useState({});
+
   // Edit Modal aur Form ke liye states
   const [editingMovie, setEditingMovie] = useState(null);
   const [formData, setFormData] = useState({ 
     title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: '', language: '' 
   });
 
-  // === NAYI STATE: Preview Player (Check karne ke liye) ===
   const [previewLink, setPreviewLink] = useState(null);
-
   const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+  // === SMART AUTO-CHECKER FUNCTION ===
+  const checkVidSrcStatus = async (moviesList) => {
+    const initialStatus = {};
+    
+    // Pehle sabko default status de do
+    moviesList.forEach(m => {
+      if (m.customUrl && m.customUrl !== "") {
+        initialStatus[m._id] = 'custom';
+      } else {
+        initialStatus[m._id] = 'checking'; // Shuru mein loading state
+      }
+    });
+    setVidStatus(initialStatus);
+
+    // Ab ek ek karke background mein API se check karo
+    for (const movie of moviesList) {
+      if (!movie.customUrl || movie.customUrl === "") {
+        try {
+          const checkUrl = `https://vsembed.ru/embed/movie/${movie.imdbId}`;
+          
+          // CORS Proxy use kar ke secretly VidSrc ka page parhna
+          const { data } = await axios.get(`https://api.allorigins.win/get?url=${encodeURIComponent(checkUrl)}`);
+          const htmlCode = data.contents || "";
+
+          // Agar page ke andar error likha hai to missing kardo
+          if (htmlCode.includes("unavailable at the moment") || htmlCode.includes("404 Not Found")) {
+            setVidStatus(prev => ({ ...prev, [movie._id]: 'missing' }));
+          } else {
+            // Agar error nahi hai matlab movie majood hai!
+            setVidStatus(prev => ({ ...prev, [movie._id]: 'working' }));
+          }
+        } catch (error) {
+          // Agar check karne mein internet ka masla aaye
+          setVidStatus(prev => ({ ...prev, [movie._id]: 'error' }));
+        }
+      }
+    }
+  };
 
   // 1. Movies Fetch Karne Ka Function
   const fetchMovies = async () => {
@@ -23,7 +63,7 @@ export default function ManageMovies({ categoryTitle }) {
       setLoading(true);
       const response = await axios.get(`${API_BASE_URL}/api/movies/all`);
 
-      // Smart Filtering: Language ke hisaab se Bollywood / Hollywood alag karna
+      // Smart Filtering
       const filteredMovies = response.data.filter((movie) => {
         if (categoryTitle.toLowerCase().includes("bollywood")) {
           return movie.language === 'Hindi';
@@ -33,6 +73,10 @@ export default function ManageMovies({ categoryTitle }) {
       });
       
       setMovies(filteredMovies);
+      
+      // Fetch hone ke foran baad Checker chala do
+      checkVidSrcStatus(filteredMovies);
+      
       setLoading(false);
     } catch (error) {
       console.error("❌ [FETCH ERROR]:", error);
@@ -70,7 +114,6 @@ export default function ManageMovies({ categoryTitle }) {
 
   // 4. Video Preview Checker Logic
   const openPreview = (movie) => {
-    // Agar customUrl hai to wo chalao, warna VidSrc ka link chala kar check karo
     const linkToCheck = movie.customUrl && movie.customUrl !== "" 
       ? movie.customUrl 
       : `https://vsembed.ru/embed/movie/${movie.imdbId}`;
@@ -83,32 +126,22 @@ export default function ManageMovies({ categoryTitle }) {
         Manage <span className="text-red-600">{categoryTitle}</span> Movies
       </h2>
 
-      {/* === 🔴 LIVE PREVIEW MODAL (Video Checker) 🔴 === */}
+      {/* === 🔴 LIVE PREVIEW MODAL === */}
       {previewLink && (
         <div className="fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-4">
           <div className="w-full max-w-4xl bg-gray-900 rounded-lg overflow-hidden border border-gray-700 shadow-2xl relative">
             <div className="bg-gray-800 p-3 flex justify-between items-center">
-              <span className="text-yellow-400 font-bold flex items-center gap-2">
-                🔍 Testing Player Link
-              </span>
-              <button onClick={() => setPreviewLink(null)} className="text-white bg-red-600 hover:bg-red-700 px-4 py-1 rounded font-bold">
-                Close Preview
-              </button>
+              <span className="text-yellow-400 font-bold flex items-center gap-2">🔍 Testing Player Link</span>
+              <button onClick={() => setPreviewLink(null)} className="text-white bg-red-600 hover:bg-red-700 px-4 py-1 rounded font-bold">Close Preview</button>
             </div>
-            {/* Iframe to test the actual link */}
-            <iframe 
-              src={previewLink} 
-              className="w-full h-[60vh] md:h-[70vh]" 
-              frameBorder="0" 
-              allowFullScreen>
-            </iframe>
+            <iframe src={previewLink} className="w-full h-[60vh] md:h-[70vh]" frameBorder="0" allowFullScreen></iframe>
           </div>
         </div>
       )}
 
       {/* === EDIT MOVIE MODAL / FORM === */}
       {editingMovie && (
-        <div className="bg-gray-800 p-8 rounded-xl mb-10 border border-red-900/50 shadow-2xl relative">
+        <div className="bg-gray-800 p-8 rounded-xl mb-10 border border-red-900/50 shadow-2xl relative z-40">
           <button onClick={() => setEditingMovie(null)} className="absolute top-4 right-6 text-gray-400 hover:text-red-500 font-bold text-2xl">✕</button>
           <h3 className="text-2xl text-white font-bold mb-6">Edit Movie: <span className="text-red-500">{formData.title}</span></h3>
           
@@ -117,8 +150,8 @@ export default function ManageMovies({ categoryTitle }) {
             <div><label className="block text-gray-400 mb-1 font-semibold">IMDB ID</label><input type="text" value={formData.imdbId} onChange={(e) => setFormData({...formData, imdbId: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded focus:border-red-500" /></div>
             
             <div className="md:col-span-2 p-4 bg-gray-900 border border-yellow-600/50 rounded">
-              <label className="block text-yellow-500 mb-1 font-bold">Custom Player URL (Agar VidSrc par movie na chalay)</label>
-              <input type="text" value={formData.customUrl} onChange={(e) => setFormData({...formData, customUrl: e.target.value})} placeholder="Paste Telegram/Streamwish link here..." className="w-full p-3 bg-gray-700 text-white rounded focus:border-yellow-500" />
+              <label className="block text-yellow-500 mb-1 font-bold">Custom Player URL (Telegram / Streamwish)</label>
+              <input type="text" value={formData.customUrl} onChange={(e) => setFormData({...formData, customUrl: e.target.value})} placeholder="Paste custom link here if VidSrc is missing..." className="w-full p-3 bg-gray-700 text-white rounded focus:border-yellow-500" />
             </div>
 
             <div className="flex gap-4 md:col-span-2">
@@ -149,19 +182,38 @@ export default function ManageMovies({ categoryTitle }) {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {movies.map((movie) => {
             
-            // Checking: Is this using VidSrc or Custom?
-            const isCustom = movie.customUrl && movie.customUrl !== "";
+            // Current movie ka status nikalo
+            const currentStatus = vidStatus[movie._id] || 'checking';
+            
+            // Status ke hisaab se Badge ka color aur text set karo
+            let badgeClass = "bg-gray-600";
+            let badgeText = "⏳ Checking...";
+            let cardBorder = "border-gray-700";
+
+            if (currentStatus === 'custom') {
+              badgeClass = "bg-green-600";
+              badgeText = "🟢 Custom Link";
+            } else if (currentStatus === 'working') {
+              badgeClass = "bg-blue-600";
+              badgeText = "✅ VidSrc OK";
+            } else if (currentStatus === 'missing') {
+              badgeClass = "bg-red-600 animate-pulse";
+              badgeText = "🔴 Link Missing!";
+              cardBorder = "border-red-600 shadow-red-900/50 shadow-lg"; // Missing par red border aa jayega!
+            } else if (currentStatus === 'error') {
+              badgeClass = "bg-yellow-600";
+              badgeText = "⚠️ Check Manually";
+            }
 
             return (
-              <div key={movie._id} className="bg-gray-800 rounded-lg overflow-hidden flex flex-col shadow-lg border border-gray-700 relative group">
+              <div key={movie._id} className={`bg-gray-800 rounded-lg overflow-hidden flex flex-col shadow-lg border-2 relative group transition-all duration-300 ${cardBorder}`}>
                 
-                {/* 🔴 STATUS BADGE (VidSrc vs Custom) */}
-                <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold text-white z-10 ${isCustom ? 'bg-green-600' : 'bg-blue-600'}`}>
-                  {isCustom ? '🟢 Custom Link' : '🔵 VidSrc API'}
+                {/* 🔴 DYNAMIC STATUS BADGE */}
+                <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold text-white z-10 ${badgeClass}`}>
+                  {badgeText}
                 </div>
 
-                {/* Language Tag */}
-                <div className="absolute top-2 right-2 bg-red-600/90 px-2 py-1 rounded text-xs text-white font-bold z-10">
+                <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs text-white font-bold z-10">
                   {movie.language}
                 </div>
 
@@ -173,19 +225,11 @@ export default function ManageMovies({ categoryTitle }) {
                   <h3 className="text-lg font-bold text-white mb-1 truncate" title={movie.title}>{movie.title}</h3>
                   <p className="text-sm text-gray-400 mb-4">{movie.year}</p>
                   
-                  {/* Action Buttons */}
                   <div className="mt-auto flex gap-2">
-                    <button 
-                      onClick={() => openPreview(movie)} 
-                      className="bg-yellow-600 text-white flex-1 py-2 rounded hover:bg-yellow-500 font-bold transition flex justify-center items-center text-sm"
-                      title="Play video to check if it's working"
-                    >
+                    <button onClick={() => openPreview(movie)} className="bg-yellow-600 text-white flex-1 py-2 rounded hover:bg-yellow-500 font-bold transition flex justify-center items-center text-sm">
                       ▶️ Check
                     </button>
-                    <button 
-                      onClick={() => handleEditClick(movie)} 
-                      className="bg-gray-600 text-white flex-1 py-2 rounded hover:bg-gray-500 font-bold transition flex justify-center items-center text-sm"
-                    >
+                    <button onClick={() => handleEditClick(movie)} className="bg-gray-600 text-white flex-1 py-2 rounded hover:bg-gray-500 font-bold transition flex justify-center items-center text-sm">
                       ✏️ Edit
                     </button>
                   </div>
