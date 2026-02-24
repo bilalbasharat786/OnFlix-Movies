@@ -22,6 +22,8 @@ connectDB();
 // Routes
 app.use("/api/movies", movieRoutes);
 
+app.get('/ping', (req, res) => res.send('ok'));
+
 app.get("/", (req, res) => {
   res.send("Movie API is Running Successfully! 🚀");
 });
