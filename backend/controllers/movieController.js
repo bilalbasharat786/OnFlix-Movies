@@ -87,3 +87,20 @@ export const updateMovie = async (req, res) => {
         res.status(500).json({ error: "Movie update karne mein masla aagaya" });
     }
 };
+
+// 6. Delete Movie Permanently
+export const deleteMovie = async (req, res) => {
+    try {
+        // ID ke zariye movie dhoondh kar hamesha ke liye delete kar dega
+        const deletedMovie = await Movie.findByIdAndDelete(req.params.id);
+        
+        if (!deletedMovie) {
+            return res.status(404).json({ message: "Movie not found" });
+        }
+        
+        res.status(200).json({ message: "Movie successfully deleted!" });
+    } catch (error) {
+        console.error("Delete error:", error);
+        res.status(500).json({ error: "Movie delete karne mein masla aagaya" });
+    }
+};

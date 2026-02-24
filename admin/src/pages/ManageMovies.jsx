@@ -130,6 +130,31 @@ export default function ManageMovies({ categoryTitle }) {
     }
   };
 
+  // === 4. DELETE BUTTON LOGIC (NAYA FUNCTION) 🗑️ ===
+  const handleDelete = async (id, title) => {
+    // Alert popup taake ghalti se click hone par movie delete na ho
+    const confirmDelete = window.confirm(`⚠️ WARNING: Kya aap waqai "${title}" ko hamesha ke liye delete karna chahte hain? Yeh wapis nahi aayegi!`);
+    
+    if (!confirmDelete) return; // Agar user Cancel dabaye to function yahin ruk jayega
+
+    try {
+      await axios.delete(`${API_BASE_URL}/api/movies/${id}`);
+      toast.success(`🗑️ "${title}" successfully delete ho gayi!`);
+      fetchMovies(); // Delete hone ke baad list ko dubara fetch karo taake wo movie screen se gayab ho jaye
+    } catch (error) {
+      console.error("❌ [DELETE ERROR]:", error);
+      toast.error("Movie delete nahi ho saki. Console check karein!");
+    }
+  };
+
+  // 5. Video Preview Checker Logic
+  const openPreview = (movie) => {
+    const linkToCheck = movie.customUrl && movie.customUrl !== "" 
+      ? movie.customUrl 
+      : `https://vsembed.ru/embed/movie/${movie.imdbId}`;
+    setPreviewLink(linkToCheck);
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8">
       
@@ -211,9 +236,12 @@ export default function ManageMovies({ categoryTitle }) {
                   <div className="h-56 w-full bg-gray-900"><img src={movie.posterUrl} alt={movie.title} className="w-full h-full object-cover" /></div>
                   <div className="p-3 flex flex-col flex-grow">
                     <h3 className="text-md font-bold text-white mb-1 truncate" title={movie.title}>{movie.title}</h3>
-                    <div className="mt-auto flex gap-2">
-                      <button onClick={() => openPreview(movie)} className="bg-yellow-600 text-white flex-1 py-1 rounded font-bold text-xs hover:bg-yellow-500">▶️ Check</button>
-                      <button onClick={() => handleEditClick(movie)} className="bg-gray-600 text-white flex-1 py-1 rounded font-bold text-xs hover:bg-gray-500">✏️ Edit</button>
+                    
+                    {/* === ACTION BUTTONS (Update kiye gaye hain) === */}
+                    <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                      <button onClick={() => openPreview(movie)} className="bg-yellow-600 text-white flex-1 min-w-[30%] py-1 rounded font-bold text-xs hover:bg-yellow-500 transition">▶️ Check</button>
+                      <button onClick={() => handleEditClick(movie)} className="bg-gray-600 text-white flex-1 min-w-[30%] py-1 rounded font-bold text-xs hover:bg-gray-500 transition">✏️ Edit</button>
+                      <button onClick={() => handleDelete(movie._id, movie.title)} className="bg-red-600 text-white flex-1 min-w-[30%] py-1 rounded font-bold text-xs hover:bg-red-700 transition">🗑️ Delete</button>
                     </div>
                   </div>
                 </div>
