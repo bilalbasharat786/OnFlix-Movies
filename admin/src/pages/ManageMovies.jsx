@@ -12,7 +12,7 @@ export default function ManageMovies({ categoryTitle }) {
   // === SEARCH & PAGINATION STATES ===
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const moviesPerPage = 50; // Ek page par 50 movies
+  const moviesPerPage = 20; // Ek page par 50 movies
 
   // Edit Modal aur Form ke liye states
   const [editingMovie, setEditingMovie] = useState(null);
@@ -27,7 +27,7 @@ export default function ManageMovies({ categoryTitle }) {
   const fetchMovies = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/api/movies/all`);
+      const response = await axios.get(`${API_BASE_URL}/api/movies/all?limit=1000`);
 
       // Category ke hisaab se filter (Bollywood / Hollywood)
       const filteredMovies = response.data.filter((movie) => {
