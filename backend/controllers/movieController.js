@@ -19,16 +19,22 @@ export const getMovies = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
-
-    console.log(`Fetching movies -> Page: ${page}, Limit: ${limit}`);
+    
+    // Nayi Cheez: URL se language nikalna
+    const languageFilter = req.query.language; 
 
     try {
-        const movies = await Movie.find()
+        let query = {};
+        // Agar frontend ne language bheji hai (jaise Bollywood page par), to sirf wo movies lao
+        if (languageFilter) {
+            query.language = languageFilter;
+        }
+
+        const movies = await Movie.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
             
-        console.log(`Found ${movies.length} movies`);
         res.status(200).json(movies);
     } catch (error) {
         console.error("Error fetching movies:", error);
@@ -39,14 +45,23 @@ export const getMovies = async (req, res) => {
 // 3. Search Movie (Indexed)
 export const searchMovies = async (req, res) => {
     const query = req.query.q;
-    console.log("Search Request for:", query);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    
+    // Nayi Cheez: Search mein bhi language filter add kar diya
+    const languageFilter = req.query.language; 
 
     try {
-        const movies = await Movie.find({
-            $text: { $search: query }
-        }).limit(10);
+        let dbQuery = { $text: { $search: query } };
+        if (languageFilter) {
+            dbQuery.language = languageFilter;
+        }
 
-        console.log(`Search Found: ${movies.length} results`);
+        const movies = await Movie.find(dbQuery)
+            .skip(skip)
+            .limit(limit);
+
         res.status(200).json(movies);
     } catch (error) {
         console.error("Error searching movie:", error);
