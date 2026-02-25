@@ -12,7 +12,7 @@ export default function ManageMovies({ categoryTitle }) {
   // === SEARCH & PAGINATION STATES ===
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const moviesPerPage = 20; // Ek page par 20 movies
+  const moviesPerPage = 50; // Ek page par 50 movies
 
   // Edit Modal aur Form ke liye states
   const [editingMovie, setEditingMovie] = useState(null);
@@ -23,14 +23,11 @@ export default function ManageMovies({ categoryTitle }) {
   const [previewLink, setPreviewLink] = useState(null);
   const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-  // 1. Movies Fetch Karne Ka Function (Sirf ek dafa saara data layega)
-// 1. Movies Fetch Karne Ka Function 
+  // 1. Movies Fetch Karne Ka Function
   const fetchMovies = async () => {
     try {
       setLoading(true);
-      
-      // 🔥 YAHAN CHANGE KIYA HAI: backend ko bola limit 1000 kardo!
-      const response = await axios.get(`${API_BASE_URL}/api/movies/all?limit=1000`);
+      const response = await axios.get(`${API_BASE_URL}/api/movies/all`);
 
       // Category ke hisaab se filter (Bollywood / Hollywood)
       const filteredMovies = response.data.filter((movie) => {
@@ -50,20 +47,17 @@ export default function ManageMovies({ categoryTitle }) {
     }
   };
 
-  // Jab page khulay ya category change ho
   useEffect(() => {
     fetchMovies();
-    setSearchTerm(''); // Category change hone par search khali kardo
-    setCurrentPage(1); // Pehle page par wapis aao
+    setSearchTerm(''); 
+    setCurrentPage(1); 
   }, [categoryTitle]);
 
   // === LOGIC: SEARCHING & PAGINATION ===
-  // 1. Pehle Search Filter lagao
   const searchedMovies = movies.filter(movie => 
     movie.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // 2. Phir Pagination lagao (Search hone ke baad)
   const indexOfLastMovie = currentPage * moviesPerPage;
   const indexOfFirstMovie = indexOfLastMovie - moviesPerPage;
   const currentMovies = searchedMovies.slice(indexOfFirstMovie, indexOfLastMovie);
@@ -71,19 +65,17 @@ export default function ManageMovies({ categoryTitle }) {
 
   // === SMART AUTO-CHECKER FUNCTION (Sirf Current Page Ki Movies Ke Liye) ===
   const checkVidSrcStatus = async (moviesToCheck) => {
-    const initialStatus = { ...vidStatus }; // Purana status bacha kar rakho
+    const initialStatus = { ...vidStatus }; 
     
-    // Nayi movies ko 'checking' status do
     moviesToCheck.forEach(m => {
       if (m.customUrl && m.customUrl !== "") {
         initialStatus[m._id] = 'custom';
-      } else if (!initialStatus[m._id]) { // Agar pehle se check nahi hui
+      } else if (!initialStatus[m._id]) { 
         initialStatus[m._id] = 'checking'; 
       }
     });
     setVidStatus(initialStatus);
 
-    // Background check sirf unke liye jo custom nahi hain
     for (const movie of moviesToCheck) {
       if (!movie.customUrl || movie.customUrl === "") {
         try {
@@ -103,12 +95,32 @@ export default function ManageMovies({ categoryTitle }) {
     }
   };
 
-  // Jab bhi naya page khulay ya search ho, sirf wo 50 movies check hongi
   useEffect(() => {
     if (currentMovies.length > 0) {
       checkVidSrcStatus(currentMovies);
     }
-  }, [currentPage, searchTerm, movies]); // In teeno mein se kuch badle to dobara check karo
+  }, [currentPage, searchTerm, movies]); 
+
+  // === RETRY CHECKER FUNCTION (Sirf Ek Movie Ke Liye) 🔄 ===
+  const retryCheck = async (movie) => {
+    // UI mein status ko 'checking' dikhao
+    setVidStatus(prev => ({ ...prev, [movie._id]: 'checking' }));
+
+    try {
+      const checkUrl = `https://vsembed.ru/embed/movie/${movie.imdbId}`;
+      const { data } = await axios.get(`https://api.allorigins.win/get?url=${encodeURIComponent(checkUrl)}`);
+      const htmlCode = data.contents || "";
+
+      if (htmlCode.includes("unavailable at the moment") || htmlCode.includes("404 Not Found")) {
+        setVidStatus(prev => ({ ...prev, [movie._id]: 'missing' }));
+      } else {
+        setVidStatus(prev => ({ ...prev, [movie._id]: 'working' }));
+      }
+    } catch (error) {
+      // Agar dubara error aaye to phir error likh do
+      setVidStatus(prev => ({ ...prev, [movie._id]: 'error' }));
+    }
+  };
 
   // 2. Edit Button Logic
   const handleEditClick = (movie) => {
@@ -133,17 +145,16 @@ export default function ManageMovies({ categoryTitle }) {
     }
   };
 
-  // === 4. DELETE BUTTON LOGIC (NAYA FUNCTION) 🗑️ ===
+  // 4. DELETE BUTTON LOGIC 🗑️ 
   const handleDelete = async (id, title) => {
-    // Alert popup taake ghalti se click hone par movie delete na ho
     const confirmDelete = window.confirm(`⚠️ WARNING: Kya aap waqai "${title}" ko hamesha ke liye delete karna chahte hain? Yeh wapis nahi aayegi!`);
     
-    if (!confirmDelete) return; // Agar user Cancel dabaye to function yahin ruk jayega
+    if (!confirmDelete) return; 
 
     try {
       await axios.delete(`${API_BASE_URL}/api/movies/${id}`);
       toast.success(`🗑️ "${title}" successfully delete ho gayi!`);
-      fetchMovies(); // Delete hone ke baad list ko dubara fetch karo taake wo movie screen se gayab ho jaye
+      fetchMovies(); 
     } catch (error) {
       console.error("❌ [DELETE ERROR]:", error);
       toast.error("Movie delete nahi ho saki. Console check karein!");
@@ -174,7 +185,7 @@ export default function ManageMovies({ categoryTitle }) {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1); // Search karte hi Page 1 par aao
+              setCurrentPage(1); 
             }}
             className="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600 focus:outline-none focus:border-red-500 shadow-lg"
           />
@@ -231,16 +242,33 @@ export default function ManageMovies({ categoryTitle }) {
               if (currentStatus === 'custom') { badgeClass = "bg-green-600"; badgeText = "🟢 Custom"; } 
               else if (currentStatus === 'working') { badgeClass = "bg-blue-600"; badgeText = "✅ OK"; } 
               else if (currentStatus === 'missing') { badgeClass = "bg-red-600 animate-pulse"; badgeText = "🔴 Missing"; cardBorder = "border-red-600 shadow-red-900/50 shadow-lg"; } 
-              else if (currentStatus === 'error') { badgeClass = "bg-yellow-600"; badgeText = "⚠️ Error"; }
+              else if (currentStatus === 'error') { badgeClass = "bg-yellow-600"; badgeText = "⚠️ Error"; cardBorder = "border-yellow-600 shadow-yellow-900/50 shadow-lg"; }
 
               return (
                 <div key={movie._id} className={`bg-gray-800 rounded-lg overflow-hidden flex flex-col shadow-lg border-2 relative transition-all duration-300 ${cardBorder}`}>
-                  <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-bold text-white z-10 ${badgeClass}`}>{badgeText}</div>
+                  
+                  {/* Status Badge + Retry Button */}
+                  <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
+                    <div className={`px-2 py-1 rounded text-xs font-bold text-white ${badgeClass}`}>
+                      {badgeText}
+                    </div>
+                    {/* Agar status Error hai to chota sa Retry button show hoga */}
+                    {currentStatus === 'error' && (
+                      <button 
+                        onClick={() => retryCheck(movie)}
+                        title="Retry Checking"
+                        className="bg-yellow-500 hover:bg-yellow-400 text-black px-2 py-1 rounded-full text-xs font-bold shadow-md transition"
+                      >
+                        🔄
+                      </button>
+                    )}
+                  </div>
+
                   <div className="h-56 w-full bg-gray-900"><img src={movie.posterUrl} alt={movie.title} className="w-full h-full object-cover" /></div>
                   <div className="p-3 flex flex-col flex-grow">
                     <h3 className="text-md font-bold text-white mb-1 truncate" title={movie.title}>{movie.title}</h3>
                     
-                    {/* === ACTION BUTTONS (Update kiye gaye hain) === */}
+                    {/* === ACTION BUTTONS === */}
                     <div className="mt-auto flex flex-wrap gap-2 pt-2">
                       <button onClick={() => openPreview(movie)} className="bg-yellow-600 text-white flex-1 min-w-[30%] py-1 rounded font-bold text-xs hover:bg-yellow-500 transition">▶️ Check</button>
                       <button onClick={() => handleEditClick(movie)} className="bg-gray-600 text-white flex-1 min-w-[30%] py-1 rounded font-bold text-xs hover:bg-gray-500 transition">✏️ Edit</button>
