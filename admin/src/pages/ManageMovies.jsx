@@ -15,10 +15,10 @@ export default function ManageMovies({ categoryTitle }) {
   const [currentPage, setCurrentPage] = useState(1);
   const moviesPerPage = 20; // Ek page par 20 movies
 
-  // Edit Modal aur Form ke liye states (Category bhi add kardi hai)
+  // Edit Modal aur Form ke liye states (Genres aur Rating bhi add kardi hai)
   const [editingMovie, setEditingMovie] = useState(null);
   const [formData, setFormData] = useState({ 
-    title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: '', language: '', category: '' 
+    title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: '', language: '', category: '', genres: '', rating: '' 
   });
 
   const [previewLink, setPreviewLink] = useState(null);
@@ -29,7 +29,6 @@ export default function ManageMovies({ categoryTitle }) {
     try {
       setLoading(true);
       
-      // 🔥 YAHAN CHANGE KIYA HAI: Agar year select hua hai to backend ko batao
       let url = `${API_BASE_URL}/api/movies/all?limit=1000`;
       if (selectedYear) {
         url += `&year=${selectedYear}`;
@@ -37,7 +36,7 @@ export default function ManageMovies({ categoryTitle }) {
 
       const response = await axios.get(url);
 
-      // Category ke hisaab se filter (Nayi category aur purani language dono support karega)
+      // Category ke hisaab se filter
       const filteredMovies = response.data.filter((movie) => {
         if (categoryTitle.toLowerCase().includes("bollywood")) {
           return movie.language === 'Hindi' || movie.category === 'Bollywood';
@@ -60,7 +59,7 @@ export default function ManageMovies({ categoryTitle }) {
     fetchMovies();
     setSearchTerm(''); // Search khali kardo
     setCurrentPage(1); // Pehle page par wapis aao
-  }, [categoryTitle, selectedYear]); // 🔥 selectedYear add kiya hai
+  }, [categoryTitle, selectedYear]);
 
   // === LOGIC: SEARCHING & PAGINATION ===
   const searchedMovies = movies.filter(movie => 
@@ -129,13 +128,14 @@ export default function ManageMovies({ categoryTitle }) {
     }
   };
 
-  // 2. Edit Button Logic
+  // 2. Edit Button Logic (Yahan genres aur rating add ki hai)
   const handleEditClick = (movie) => {
     setEditingMovie(movie._id);
     setFormData({ 
       title: movie.title || '', posterUrl: movie.posterUrl || '', imdbId: movie.imdbId || '', 
       customUrl: movie.customUrl || '', description: movie.description || '', year: movie.year || '', 
-      language: movie.language || 'Hindi', category: movie.category || 'Bollywood'
+      language: movie.language || 'Hindi', category: movie.category || 'Bollywood',
+      genres: movie.genres || '', rating: movie.rating || '' // 🔥 Nayi Fields Edit mein aayengi
     });
   };
 
@@ -264,6 +264,18 @@ export default function ManageMovies({ categoryTitle }) {
                   <option>Dual Audio</option>
                   <option>Hindi Dubbed</option>
                 </select>
+              </div>
+            </div>
+
+            {/* 🔥 NAYI FIELDS: GENRES AUR RATING (EDIT MODAL MEIN BHI) */}
+            <div className="flex flex-wrap md:flex-nowrap gap-4 md:col-span-2">
+              <div className="w-full md:w-2/3">
+                <label className="block text-gray-400 mb-1">Genres</label>
+                <input type="text" value={formData.genres} onChange={(e) => setFormData({...formData, genres: e.target.value})} placeholder="Action, Comedy..." className="w-full p-3 bg-gray-700 text-white rounded" />
+              </div>
+              <div className="w-full md:w-1/3">
+                <label className="block text-gray-400 mb-1">Rating</label>
+                <input type="text" value={formData.rating} onChange={(e) => setFormData({...formData, rating: e.target.value})} placeholder="8.5" className="w-full p-3 bg-gray-700 text-white rounded" />
               </div>
             </div>
 

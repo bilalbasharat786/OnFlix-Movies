@@ -23,11 +23,10 @@ const Home = () => {
     setMovies([]);
     setPage(1);
     setHasMore(true);
-  }, [searchQuery, selectedYear]); // selectedYear add kar diya
+  }, [searchQuery, selectedYear]);
 
   // 2. Backend se movies mangwana (🔥 DEBOUNCE + ABORT CONTROLLER MAGIC)
   useEffect(() => {
-    // Pichli ruki hui request ko cancel karne ka Controller
     const controller = new AbortController(); 
 
     const fetchMovies = async () => {
@@ -44,12 +43,10 @@ const Home = () => {
           url = `${import.meta.env.VITE_API_URL}/api/movies/all?page=${page}&limit=20`;
         }
 
-        // 🔥 AGAR YEAR SELECT HUA HAI, TO URL MEIN BHI BHEJO
         if (selectedYear) {
             url += `&year=${selectedYear}`;
         }
 
-        // 🔥 Yahan humne signal add kiya hai taake request raste mein ruki ja sakay
         const res = await axios.get(url, { signal: controller.signal });
 
         if (page === 1) {
@@ -62,7 +59,6 @@ const Home = () => {
           setHasMore(false);
         }
       } catch (error) {
-        // Agar request humne khud cancel ki hai to error show na ho
         if (axios.isCancel(error)) {
           console.log("⏳ Pichli search cancel kar di gayi:", searchQuery);
         } else {
@@ -74,18 +70,15 @@ const Home = () => {
       }
     };
 
-    // 🔥 DEBOUNCE JADU: User ke type karne ke 300ms (0.3s) baad API hit hogi
     const delayTimer = setTimeout(() => {
       fetchMovies();
     }, 300);
 
-    // CLEANUP FUNCTION: Agar user ne 0.3s se pehle naya lafz likh diya, 
-    // to purana timer aur purani API request dono Cancel! 🚫
     return () => {
       clearTimeout(delayTimer); 
       controller.abort(); 
     };
-  }, [page, searchQuery, selectedYear]); // Dependencies update kar di
+  }, [page, searchQuery, selectedYear]);
 
   // 3. Infinite Scroll Listener
   useEffect(() => {
@@ -101,7 +94,6 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loading, loadingMore]);
 
-  // Saal (Years) ki list (2026 se 2000 tak)
   const yearsList = Array.from({ length: 27 }, (_, i) => 2026 - i);
 
   return (
@@ -113,7 +105,6 @@ const Home = () => {
           {searchQuery ? `Search Results for "${searchQuery}"` : "Latest Movies"}
         </h1>
 
-        {/* 🔥 NAYA SELECT YEAR DROPDOWN (Red Theme) */}
         <div className="flex items-center gap-2 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700 shadow-lg">
             <label className="text-gray-400 font-semibold text-sm whitespace-nowrap">Filter Year:</label>
             <select 
@@ -130,7 +121,7 @@ const Home = () => {
       </div>
 
       {/* Movies Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-x-6 md:gap-y-10">
         
         {loading && page === 1 ? (
           [...Array(10)].map((_, i) => (
@@ -146,22 +137,53 @@ const Home = () => {
             </p>
           </div>
         ) : (
-          movies.map((movie) => (
-            <Link to={`/watch/${movie._id}`} key={movie._id} className="group relative shadow-lg">
-              <div className="relative overflow-hidden rounded-lg aspect-[2/3]">
-                <img 
-                  src={movie.posterUrl} 
-                  alt={movie.title} 
-                  className="w-full h-full object-cover transform group-hover:scale-110 transition duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex items-center justify-center transition duration-300">
-                  <Play className="text-white opacity-0 group-hover:opacity-100 w-12 h-12" fill="white" />
+          movies.map((movie) => {
+            // 🔥 RATING LOGIC: 8.5 ko 85% banayega, agar rating na ho to 0
+            const percentage = movie.rating ? Math.round(Number(movie.rating) * 10) : 0;
+            // Rang (Color) ki logic
+            const ringColor = percentage >= 70 ? 'border-[#21d07a]' : percentage >= 50 ? 'border-[#d2d531]' : 'border-[#db2360]';
+
+            return (
+              <Link to={`/watch/${movie._id}`} key={movie._id} className="group relative shadow-lg flex flex-col">
+                
+                {/* === POSTER & OVERLAPPING BADGE CONTAINER === */}
+                <div className="relative w-full">
+                  <div className="relative overflow-hidden rounded-lg aspect-[2/3]">
+                    <img 
+                      src={movie.posterUrl} 
+                      alt={movie.title} 
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex items-center justify-center transition duration-300">
+                      <Play className="text-white opacity-0 group-hover:opacity-100 w-12 h-12" fill="white" />
+                    </div>
+                  </div>
+
+                  {/* 🔥 RATING BADGE (Bilkul TMDB Style) */}
+                  {percentage > 0 && (
+                    <div className={`absolute -bottom-5 left-3 w-10 h-10 md:w-11 md:h-11 bg-[#081c22] rounded-full flex items-center justify-center border-[3px] shadow-lg z-10 ${ringColor}`}>
+                      <span className="text-white text-xs md:text-sm font-bold">
+                        {percentage}<span className="text-[8px] font-normal">%</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <h3 className="mt-2 text-sm md:text-lg font-semibold truncate text-white">{movie.title}</h3>
-              <p className="text-gray-400 text-xs md:text-sm">{movie.year} • {movie.language}</p>
-            </Link>
-          ))
+
+                {/* === MOVIE DETAILS === */}
+                <div className="mt-6 flex flex-col">
+                  <h3 className="text-sm md:text-lg font-semibold truncate text-white" title={movie.title}>{movie.title}</h3>
+                  <p className="text-gray-400 text-xs md:text-sm mt-0.5">{movie.year} • {movie.language}</p>
+                  
+                  {/* 🔥 GENRES (Ab neechay show hongay) */}
+                  {movie.genres && (
+                    <p className="text-gray-500 text-[10px] md:text-xs truncate mt-0.5" title={movie.genres}>
+                      {movie.genres}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            );
+          })
         )}
       </div>
 

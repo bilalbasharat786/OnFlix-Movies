@@ -91,14 +91,15 @@ export const getMovieById = async (req, res) => {
 };
 
 // 5. Update Movie Details (FIXED CODE with Category)
+// 5. Update Movie Details (WITH GENRES & RATING)
 export const updateMovie = async (req, res) => {
     try {
-        // Yahan category bhi add kardi hai
-        const { title, posterUrl, imdbId, customUrl, description, year, language, category } = req.body;
+        // 🔥 Yahan genres aur rating add kar diya
+        const { title, posterUrl, imdbId, customUrl, description, year, language, category, genres, rating } = req.body;
         
         const updatedMovie = await Movie.findByIdAndUpdate(
             req.params.id,
-            { title, posterUrl, imdbId, customUrl, description, year, language, category },
+            { title, posterUrl, imdbId, customUrl, description, year, language, category, genres, rating },
             { new: true } 
         );
 

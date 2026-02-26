@@ -11,7 +11,9 @@ const AddMovie = () => {
     description: '',
     year: new Date().getFullYear(),
     language: 'Hindi',
-    category: 'Bollywood' // 🔥 Nayi State Default
+    category: 'Bollywood', // 🔥 Nayi State Default
+    genres: '', // 🔥 Nayi State (For Action, Comedy etc)
+    rating: ''  // 🔥 Nayi State (For 8.5 etc)
   });
 
   const [loading, setLoading] = useState(false);
@@ -42,10 +44,19 @@ const AddMovie = () => {
       if (res.data.movie_results && res.data.movie_results.length > 0) {
         const tmdbMovie = res.data.movie_results[0];
 
+        // 🔥 EXTRA JADU: Movie ki full detail (Genres/Rating) lane ke liye direct TMDB ID par call
+        const detailUrl = `https://api.themoviedb.org/3/movie/${tmdbMovie.id}?api_key=${TMDB_API_KEY}`;
+        const detailRes = await axios.get(detailUrl);
+        const fullMovieData = detailRes.data;
+
         const fullPosterUrl = tmdbMovie.poster_path
           ? `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}`
           : '';
         const releaseYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : 2026;
+
+        // Genres aur Rating nikalna
+        const fetchedGenres = fullMovieData.genres ? fullMovieData.genres.map(g => g.name).join(', ') : '';
+        const fetchedRating = fullMovieData.vote_average ? fullMovieData.vote_average.toFixed(1) : '';
 
         // 🔥 SMART AUTO-CATEGORY & LANGUAGE DETECTOR
         const ogLang = tmdbMovie.original_language;
@@ -67,7 +78,9 @@ const AddMovie = () => {
           description: tmdbMovie.overview || '',
           year: releaseYear,
           language: autoLanguage, 
-          category: autoCategory  
+          category: autoCategory,
+          genres: fetchedGenres, // 🔥 Auto-Fill Genres
+          rating: fetchedRating  // 🔥 Auto-Fill Rating
         });
 
         toast.success(`Magic! ✨ ${autoCategory} Movie Data Auto-Filled!`);
@@ -91,7 +104,7 @@ const AddMovie = () => {
     let addedCount = 0;
 
     try {
-      // 5 Pages loop chalega (Har page par 20 movies = 50 movies total)
+      // 3 Pages loop chalega (Har page par 20 movies = max 60 movies total, isliye 50 ke qareeb banengi)
       for (let page = 1; page <= 3; page++) {
         setBulkProgress(`TMDB se Page ${page} ki movies dhoondh raha hoon...`);
         
@@ -105,24 +118,31 @@ const AddMovie = () => {
             // IMDB ID laane ke liye dobara call
             const detailUrl = `https://api.themoviedb.org/3/movie/${tmdbMovie.id}?api_key=${TMDB_API_KEY}`;
             const detailRes = await axios.get(detailUrl);
-            const imdbId = detailRes.data.imdb_id;
+            const fullMovieData = detailRes.data; // 🔥 Full data pakra
+            const imdbId = fullMovieData.imdb_id;
 
             // Agar IMDB ID nahi hai, chhor do
             if (!imdbId) continue;
 
-            const fullPosterUrl = tmdbMovie.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}` : '';
-            const releaseYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : 2019;
+            const fullPosterUrl = fullMovieData.poster_path ? `https://image.tmdb.org/t/p/w500${fullMovieData.poster_path}` : '';
+            const releaseYear = fullMovieData.release_date ? fullMovieData.release_date.split('-')[0] : 2019;
+            
+            // 🔥 Genres aur Rating nikalna
+            const fetchedGenres = fullMovieData.genres ? fullMovieData.genres.map(g => g.name).join(', ') : '';
+            const fetchedRating = fullMovieData.vote_average ? fullMovieData.vote_average.toFixed(1) : '';
 
             // Pura form data ready karo (Auto Category aur Language set ho rahi hai)
             const newMovieData = {
-              title: tmdbMovie.title || '',
+              title: fullMovieData.title || '',
               posterUrl: fullPosterUrl,
               imdbId: imdbId,
               customUrl: '',
-              description: tmdbMovie.overview || '',
+              description: fullMovieData.overview || '',
               year: releaseYear,
               language: 'Hindi', // Always Hindi for this bulk button
-              category: 'Bollywood' // Always Bollywood
+              category: 'Bollywood', // Always Bollywood
+              genres: fetchedGenres, // 🔥 Auto Add Genres
+              rating: fetchedRating  // 🔥 Auto Add Rating
             };
 
             await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, newMovieData);
@@ -155,7 +175,7 @@ const AddMovie = () => {
       if (response.status === 201) {
         toast.success("Movie Added Successfully! 🚀");
         setMovie({
-          title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: 2026, language: 'Hindi', category: 'Bollywood'
+          title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: 2026, language: 'Hindi', category: 'Bollywood', genres: '', rating: '' // 🔥 Nayi fields clear ki
         });
       }
     } catch (error) {
@@ -242,6 +262,18 @@ const AddMovie = () => {
               <option>Dual Audio</option>
               <option>Hindi Dubbed</option>
             </select>
+          </div>
+        </div>
+
+        {/* 🔥 NAYI FIELDS: GENRES AUR RATING */}
+        <div className="flex flex-wrap md:flex-nowrap gap-4">
+          <div className="w-full md:w-2/3">
+            <label className="block text-gray-400 mb-1">Genres (e.g. Action, Comedy)</label>
+            <input type="text" name="genres" value={movie.genres} onChange={handleChange} placeholder="Action, Thriller, Romance..." className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600" />
+          </div>
+          <div className="w-full md:w-1/3">
+            <label className="block text-gray-400 mb-1">Rating (e.g. 8.5)</label>
+            <input type="text" name="rating" value={movie.rating} onChange={handleChange} placeholder="8.5" className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600" />
           </div>
         </div>
 
