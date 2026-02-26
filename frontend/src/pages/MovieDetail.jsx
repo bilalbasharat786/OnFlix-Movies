@@ -164,7 +164,7 @@ const MovieDetail = () => {
       </div>
 
       {/* === MOVIE DETAILS SECTION === */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 md:-mt-32 relative z-10">
+   <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${isMoviePlaying || isTrailerPlaying ? 'mt-4 md:mt-8' : '-mt-10 md:-mt-32'}`}>
         <div className="flex flex-col md:flex-row gap-8">
           
           {/* Left Side: Poster (Chup jayega jab movie/trailer chal raha ho mobile par) */}
@@ -177,7 +177,7 @@ const MovieDetail = () => {
           </div>
 
           {/* Right Side: Info */}
-          <div className="flex flex-col justify-end pt-4 md:pt-20 lg:pt-32">
+<div className={`flex flex-col justify-end ${isMoviePlaying || isTrailerPlaying ? 'pt-0 md:pt-4' : 'pt-4 md:pt-20 lg:pt-32'}`}>
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-black mb-2 text-white drop-shadow-lg">
               {movie.title}
             </h1>
