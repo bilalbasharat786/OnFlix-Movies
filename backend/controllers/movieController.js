@@ -14,23 +14,27 @@ export const addMovie = async (req, res) => {
     }
 };
 
-// 2. Get All Movies (with Pagination & CATEGORY Filter)
+// 2. Get All Movies (with Pagination, CATEGORY & GENRE Filter)
 export const getMovies = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
     
     const categoryFilter = req.query.category; 
-    const yearFilter = req.query.year; // 🔥 NAYI CHEEZ: Frontend se aane wala saal
+    const yearFilter = req.query.year; 
+    const genreFilter = req.query.genre; // 🔥 NAYI CHEEZ: Frontend se aane wala Genre
 
     try {
         let query = {};
         if (categoryFilter) {
             query.category = categoryFilter; 
         }
-        // 🔥 JADU: Agar saal select hua hai, to Database mein sirf wahi saal dhoondo
         if (yearFilter) {
             query.year = parseInt(yearFilter);
+        }
+        // 🔥 JADU: Agar genre select hua hai, to usay filter karo
+        if (genreFilter) {
+            query.genres = { $regex: genreFilter, $options: 'i' }; // 'i' ka matlab case-insensitive
         }
 
         const movies = await Movie.find(query)
@@ -45,7 +49,7 @@ export const getMovies = async (req, res) => {
     }
 };
 
-// 3. Search Movie (with CATEGORY Filter)
+// 3. Search Movie (with CATEGORY & GENRE Filter)
 export const searchMovies = async (req, res) => {
     const query = req.query.q || ''; 
     const page = parseInt(req.query.page) || 1;
@@ -53,7 +57,8 @@ export const searchMovies = async (req, res) => {
     const skip = (page - 1) * limit;
     
     const categoryFilter = req.query.category; 
-    const yearFilter = req.query.year; // 🔥 NAYI CHEEZ
+    const yearFilter = req.query.year; 
+    const genreFilter = req.query.genre; // 🔥 NAYI CHEEZ
 
     try {
         let dbQuery = { title: { $regex: query, $options: 'i' } };
@@ -61,9 +66,12 @@ export const searchMovies = async (req, res) => {
         if (categoryFilter) {
             dbQuery.category = categoryFilter;
         }
-        // 🔥 Search mein bhi year filter laga diya
         if (yearFilter) {
             dbQuery.year = parseInt(yearFilter);
+        }
+        // 🔥 Search mein bhi genre filter laga diya
+        if (genreFilter) {
+            dbQuery.genres = { $regex: genreFilter, $options: 'i' };
         }
 
         const movies = await Movie.find(dbQuery)
@@ -90,11 +98,9 @@ export const getMovieById = async (req, res) => {
     }
 };
 
-// 5. Update Movie Details (FIXED CODE with Category)
 // 5. Update Movie Details (WITH GENRES & RATING)
 export const updateMovie = async (req, res) => {
     try {
-        // 🔥 Yahan genres aur rating add kar diya
         const { title, posterUrl, imdbId, customUrl, year, language, category, genres, rating } = req.body;
         
         const updatedMovie = await Movie.findByIdAndUpdate(
