@@ -18,7 +18,7 @@ export default function ManageMovies({ categoryTitle }) {
   // Edit Modal aur Form ke liye states (Genres aur Rating bhi add kardi hai)
   const [editingMovie, setEditingMovie] = useState(null);
   const [formData, setFormData] = useState({ 
-    title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: '', language: '', category: '', genres: '', rating: '' 
+    title: '', posterUrl: '', imdbId: '', customUrl: '', year: '', language: '', category: '', genres: '', rating: '' 
   });
 
   const [previewLink, setPreviewLink] = useState(null);
@@ -133,7 +133,7 @@ export default function ManageMovies({ categoryTitle }) {
     setEditingMovie(movie._id);
     setFormData({ 
       title: movie.title || '', posterUrl: movie.posterUrl || '', imdbId: movie.imdbId || '', 
-      customUrl: movie.customUrl || '', description: movie.description || '', year: movie.year || '', 
+      customUrl: movie.customUrl || '', year: movie.year || '', 
       language: movie.language || 'Hindi', category: movie.category || 'Bollywood',
       genres: movie.genres || '', rating: movie.rating || '' // 🔥 Nayi Fields Edit mein aayengi
     });
@@ -280,7 +280,6 @@ export default function ManageMovies({ categoryTitle }) {
             </div>
 
             <div className="md:col-span-2"><label className="block text-gray-400 mb-1">Poster URL</label><input type="text" value={formData.posterUrl} onChange={(e) => setFormData({...formData, posterUrl: e.target.value})} required className="w-full p-3 bg-gray-700 text-white rounded" /></div>
-            <div className="md:col-span-2"><label className="block text-gray-400 mb-1">Description</label><textarea rows="3" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded"></textarea></div>
             <div className="md:col-span-2 mt-4"><button type="submit" className="w-full bg-red-600 text-white px-6 py-3 rounded font-bold hover:bg-red-700">Save Changes</button></div>
           </form>
         </div>

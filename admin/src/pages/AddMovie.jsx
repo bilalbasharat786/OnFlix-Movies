@@ -8,7 +8,6 @@ const AddMovie = () => {
     posterUrl: '',
     imdbId: '',
     customUrl: '',
-    description: '',
     year: new Date().getFullYear(),
     language: 'Hindi',
     category: 'Bollywood', // 🔥 Nayi State Default
@@ -75,7 +74,6 @@ const AddMovie = () => {
           ...movie,
           title: tmdbMovie.title || '',
           posterUrl: fullPosterUrl,
-          description: tmdbMovie.overview || '',
           year: releaseYear,
           language: autoLanguage, 
           category: autoCategory,
@@ -137,7 +135,6 @@ const AddMovie = () => {
               posterUrl: fullPosterUrl,
               imdbId: imdbId,
               customUrl: '',
-              description: fullMovieData.overview || '',
               year: releaseYear,
               language: 'Hindi', // Always Hindi for this bulk button
               category: 'Bollywood', // Always Bollywood
@@ -175,7 +172,7 @@ const AddMovie = () => {
       if (response.status === 201) {
         toast.success("Movie Added Successfully! 🚀");
         setMovie({
-          title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: 2026, language: 'Hindi', category: 'Bollywood', genres: '', rating: '' // 🔥 Nayi fields clear ki
+          title: '', posterUrl: '', imdbId: '', customUrl: '', year: 2026, language: 'Hindi', category: 'Bollywood', genres: '', rating: '' // 🔥 Nayi fields clear ki
         });
       }
     } catch (error) {
@@ -275,11 +272,6 @@ const AddMovie = () => {
             <label className="block text-gray-400 mb-1">Rating (e.g. 8.5)</label>
             <input type="text" name="rating" value={movie.rating} onChange={handleChange} placeholder="8.5" className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600" />
           </div>
-        </div>
-
-        <div>
-          <label className="block text-gray-400 mb-1">Description</label>
-          <textarea name="description" rows="5" value={movie.description} onChange={handleChange} className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"></textarea>
         </div>
 
         <button type="submit" disabled={loading || bulkLoading} className={`w-full py-3 mt-4 font-bold text-white rounded transition ${loading ? 'bg-gray-600' : 'bg-red-600 hover:bg-red-700'}`}>

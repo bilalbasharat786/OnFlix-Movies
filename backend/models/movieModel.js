@@ -18,10 +18,6 @@ const movieSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    description: {
-      type: String,
-      default: "",
-    },
     year: {
       type: Number,
       default: new Date().getFullYear(),

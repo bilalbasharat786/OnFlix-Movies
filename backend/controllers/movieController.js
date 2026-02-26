@@ -95,11 +95,11 @@ export const getMovieById = async (req, res) => {
 export const updateMovie = async (req, res) => {
     try {
         // 🔥 Yahan genres aur rating add kar diya
-        const { title, posterUrl, imdbId, customUrl, description, year, language, category, genres, rating } = req.body;
+        const { title, posterUrl, imdbId, customUrl, year, language, category, genres, rating } = req.body;
         
         const updatedMovie = await Movie.findByIdAndUpdate(
             req.params.id,
-            { title, posterUrl, imdbId, customUrl, description, year, language, category, genres, rating },
+            { title, posterUrl, imdbId, customUrl, year, language, category, genres, rating },
             { new: true } 
         );
 
