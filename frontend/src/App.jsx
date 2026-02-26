@@ -16,11 +16,6 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/hollywood" element={<Hollywood />} />
           <Route path="/bollywood" element={<Bollywood />} />
-          
-          {/* 🔥 JADU YAHAN HAI: 
-              Ab poster par click karne se (jo /watch/ pe bhejta hai), 
-              direct movie nahi chalegi balki tumhara VIP MovieDetail page khulega! 
-          */}
           <Route path="/watch/:id" element={<MovieDetail />} />
         </Routes>
       </div>

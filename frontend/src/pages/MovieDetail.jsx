@@ -21,7 +21,7 @@ const MovieDetail = () => {
       try {
         setLoading(true);
         // 1. Apne MongoDB backend se movie laao
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/find/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/${id}`);
         const movieData = res.data;
         setMovie(movieData);
 
