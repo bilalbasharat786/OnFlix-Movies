@@ -84,7 +84,7 @@ const AddMovie = () => {
 
   // === 🚀 VIP MAGIC FUNCTION: Auto-Fetch Top 50 Bollywood Movies ===
   const autoFetchTop50 = async () => {
-    const confirmImport = window.confirm("Kya aap waqai 2020 ki Top 50 Bollywood movies automatically add karna chahte hain? Isme 1-2 minute lag sakte hain!");
+    const confirmImport = window.confirm("Kya aap waqai 2019 ki Top 50 Bollywood movies automatically add karna chahte hain? Isme 1-2 minute lag sakte hain!");
     if (!confirmImport) return;
 
     setBulkLoading(true);
@@ -92,11 +92,11 @@ const AddMovie = () => {
 
     try {
       // 5 Pages loop chalega (Har page par 20 movies = 50 movies total)
-      for (let page = 1; page <= 5; page++) {
+      for (let page = 1; page <= 3; page++) {
         setBulkProgress(`TMDB se Page ${page} ki movies dhoondh raha hoon...`);
         
-        // TMDB Discover API: Language=hi (Hindi), Year=2020
-        const discoverUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=hi&primary_release_year=2020&sort_by=popularity.desc&page=${page}`;
+        // TMDB Discover API: Language=hi (Hindi), Year=2019
+        const discoverUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=hi&primary_release_year=2019&sort_by=popularity.desc&page=${page}`;
         const res = await axios.get(discoverUrl);
         const moviesList = res.data.results;
 
@@ -111,7 +111,7 @@ const AddMovie = () => {
             if (!imdbId) continue;
 
             const fullPosterUrl = tmdbMovie.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}` : '';
-            const releaseYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : 2020;
+            const releaseYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : 2019;
 
             // Pura form data ready karo (Auto Category aur Language set ho rahi hai)
             const newMovieData = {
@@ -175,14 +175,14 @@ const AddMovie = () => {
       {/* === 🔥 VIP AUTO FETCH BUTTON === */}
       <div className="mb-8 p-4 bg-gray-900 border-2 border-dashed border-red-500 rounded-lg text-center">
         <h3 className="text-xl text-red-500 font-bold mb-2">🔥 Auto-Import Magic</h3>
-        <p className="text-sm text-gray-400 mb-4">Click karte hi 2020 ki top 50 Bollywood movies aapke database mein khud add ho jayengi!</p>
+        <p className="text-sm text-gray-400 mb-4">Click karte hi 2019 ki top 50 Bollywood movies aapke database mein khud add ho jayengi!</p>
         <button
           type="button"
           onClick={autoFetchTop50}
           disabled={bulkLoading || loading}
           className={`w-full py-3 font-bold text-white rounded shadow-lg transition-all ${bulkLoading ? 'bg-gray-600 cursor-not-allowed animate-pulse' : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700'}`}
         >
-          {bulkLoading ? `Rukiye... ${bulkProgress}` : "🚀 Auto-Fetch Top 50 Bollywood Movies (2020)"}
+          {bulkLoading ? `Rukiye... ${bulkProgress}` : "🚀 Auto-Fetch Top 50 Bollywood Movies (2019)"}
         </button>
       </div>
 
