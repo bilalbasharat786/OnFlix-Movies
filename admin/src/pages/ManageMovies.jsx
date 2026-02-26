@@ -9,32 +9,40 @@ export default function ManageMovies({ categoryTitle }) {
   // === CHECKER STATE ===
   const [vidStatus, setVidStatus] = useState({});
 
-  // === SEARCH & PAGINATION STATES ===
+  // === SEARCH, YEAR & PAGINATION STATES ===
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedYear, setSelectedYear] = useState(''); // 🔥 NAYI STATE: Year Filter ke liye
   const [currentPage, setCurrentPage] = useState(1);
-  const moviesPerPage = 20; // Ek page par 50 movies
+  const moviesPerPage = 20; // Ek page par 20 movies
 
-  // Edit Modal aur Form ke liye states
+  // Edit Modal aur Form ke liye states (Category bhi add kardi hai)
   const [editingMovie, setEditingMovie] = useState(null);
   const [formData, setFormData] = useState({ 
-    title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: '', language: '' 
+    title: '', posterUrl: '', imdbId: '', customUrl: '', description: '', year: '', language: '', category: '' 
   });
 
   const [previewLink, setPreviewLink] = useState(null);
   const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-  // 1. Movies Fetch Karne Ka Function
+  // 1. Movies Fetch Karne Ka Function (Ab Year bhi backend se layega)
   const fetchMovies = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/api/movies/all?limit=1000`);
+      
+      // 🔥 YAHAN CHANGE KIYA HAI: Agar year select hua hai to backend ko batao
+      let url = `${API_BASE_URL}/api/movies/all?limit=1000`;
+      if (selectedYear) {
+        url += `&year=${selectedYear}`;
+      }
 
-      // Category ke hisaab se filter (Bollywood / Hollywood)
+      const response = await axios.get(url);
+
+      // Category ke hisaab se filter (Nayi category aur purani language dono support karega)
       const filteredMovies = response.data.filter((movie) => {
         if (categoryTitle.toLowerCase().includes("bollywood")) {
-          return movie.language === 'Hindi';
+          return movie.language === 'Hindi' || movie.category === 'Bollywood';
         } else {
-          return movie.language === 'English' || movie.language === 'Dual Audio';
+          return movie.language === 'English' || movie.language === 'Dual Audio' || movie.category === 'Hollywood';
         }
       });
       
@@ -47,11 +55,12 @@ export default function ManageMovies({ categoryTitle }) {
     }
   };
 
+  // Jab page khulay, category change ho, YA YEAR CHANGE ho
   useEffect(() => {
     fetchMovies();
-    setSearchTerm(''); 
-    setCurrentPage(1); 
-  }, [categoryTitle]);
+    setSearchTerm(''); // Search khali kardo
+    setCurrentPage(1); // Pehle page par wapis aao
+  }, [categoryTitle, selectedYear]); // 🔥 selectedYear add kiya hai
 
   // === LOGIC: SEARCHING & PAGINATION ===
   const searchedMovies = movies.filter(movie => 
@@ -63,7 +72,7 @@ export default function ManageMovies({ categoryTitle }) {
   const currentMovies = searchedMovies.slice(indexOfFirstMovie, indexOfLastMovie);
   const totalPages = Math.ceil(searchedMovies.length / moviesPerPage);
 
-  // === SMART AUTO-CHECKER FUNCTION (Sirf Current Page Ki Movies Ke Liye) ===
+  // === SMART AUTO-CHECKER FUNCTION ===
   const checkVidSrcStatus = async (moviesToCheck) => {
     const initialStatus = { ...vidStatus }; 
     
@@ -101,9 +110,8 @@ export default function ManageMovies({ categoryTitle }) {
     }
   }, [currentPage, searchTerm, movies]); 
 
-  // === RETRY CHECKER FUNCTION (Sirf Ek Movie Ke Liye) 🔄 ===
+  // === RETRY CHECKER FUNCTION (🔄) ===
   const retryCheck = async (movie) => {
-    // UI mein status ko 'checking' dikhao
     setVidStatus(prev => ({ ...prev, [movie._id]: 'checking' }));
 
     try {
@@ -117,7 +125,6 @@ export default function ManageMovies({ categoryTitle }) {
         setVidStatus(prev => ({ ...prev, [movie._id]: 'working' }));
       }
     } catch (error) {
-      // Agar dubara error aaye to phir error likh do
       setVidStatus(prev => ({ ...prev, [movie._id]: 'error' }));
     }
   };
@@ -127,7 +134,8 @@ export default function ManageMovies({ categoryTitle }) {
     setEditingMovie(movie._id);
     setFormData({ 
       title: movie.title || '', posterUrl: movie.posterUrl || '', imdbId: movie.imdbId || '', 
-      customUrl: movie.customUrl || '', description: movie.description || '', year: movie.year || '', language: movie.language || 'Hindi' 
+      customUrl: movie.customUrl || '', description: movie.description || '', year: movie.year || '', 
+      language: movie.language || 'Hindi', category: movie.category || 'Bollywood'
     });
   };
 
@@ -169,14 +177,35 @@ export default function ManageMovies({ categoryTitle }) {
     setPreviewLink(linkToCheck);
   };
 
+  // Saal (Years) ki list banane ka tareeqa (2026 se 2000 tak)
+  const yearsList = Array.from({ length: 27 }, (_, i) => 2026 - i);
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-8">
       
-      {/* HEADER AUR SEARCH BAR */}
+      {/* HEADER, YEAR FILTER AUR SEARCH BAR */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-700 pb-4 gap-4">
-        <h2 className="text-3xl font-black text-white">
-          Manage <span className="text-red-600">{categoryTitle}</span>
-        </h2>
+        
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+          <h2 className="text-3xl font-black text-white whitespace-nowrap">
+            Manage <span className="text-red-600">{categoryTitle}</span>
+          </h2>
+          
+          {/* 🔥 NAYA SELECT YEAR DROPDOWN */}
+          <div className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-600 shadow-md w-full sm:w-auto">
+            <label className="text-gray-400 font-bold text-sm whitespace-nowrap">Select Year:</label>
+            <select 
+              value={selectedYear} 
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="bg-transparent text-white font-bold border-none focus:outline-none focus:ring-0 cursor-pointer text-sm"
+            >
+              <option value="">All Years</option>
+              {yearsList.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+        </div>
         
         <div className="w-full md:w-1/3">
           <input 
@@ -214,10 +243,30 @@ export default function ManageMovies({ categoryTitle }) {
             <div><label className="block text-gray-400 mb-1">Movie Title</label><input type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} required className="w-full p-3 bg-gray-700 text-white rounded" /></div>
             <div><label className="block text-gray-400 mb-1">IMDB ID</label><input type="text" value={formData.imdbId} onChange={(e) => setFormData({...formData, imdbId: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded" /></div>
             <div className="md:col-span-2 p-4 bg-gray-900 border border-yellow-600/50 rounded"><label className="block text-yellow-500 mb-1 font-bold">Custom Player URL</label><input type="text" value={formData.customUrl} onChange={(e) => setFormData({...formData, customUrl: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded" /></div>
-            <div className="flex gap-4 md:col-span-2">
-              <div className="w-1/2"><label className="block text-gray-400 mb-1">Year</label><input type="number" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} required className="w-full p-3 bg-gray-700 text-white rounded" /></div>
-              <div className="w-1/2"><label className="block text-gray-400 mb-1">Language</label><select value={formData.language} onChange={(e) => setFormData({...formData, language: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded"><option>Hindi</option><option>English</option><option>Dual Audio</option></select></div>
+            
+            <div className="flex flex-wrap md:flex-nowrap gap-4 md:col-span-2">
+              <div className="w-full md:w-1/3"><label className="block text-gray-400 mb-1">Year</label><input type="number" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} required className="w-full p-3 bg-gray-700 text-white rounded" /></div>
+              
+              <div className="w-full md:w-1/3">
+                <label className="block text-gray-400 mb-1">Category</label>
+                <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded">
+                  <option>Bollywood</option>
+                  <option>Hollywood</option>
+                  <option>Tollywood</option>
+                </select>
+              </div>
+
+              <div className="w-full md:w-1/3">
+                <label className="block text-gray-400 mb-1">Language</label>
+                <select value={formData.language} onChange={(e) => setFormData({...formData, language: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded">
+                  <option>Hindi</option>
+                  <option>English</option>
+                  <option>Dual Audio</option>
+                  <option>Hindi Dubbed</option>
+                </select>
+              </div>
             </div>
+
             <div className="md:col-span-2"><label className="block text-gray-400 mb-1">Poster URL</label><input type="text" value={formData.posterUrl} onChange={(e) => setFormData({...formData, posterUrl: e.target.value})} required className="w-full p-3 bg-gray-700 text-white rounded" /></div>
             <div className="md:col-span-2"><label className="block text-gray-400 mb-1">Description</label><textarea rows="3" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded"></textarea></div>
             <div className="md:col-span-2 mt-4"><button type="submit" className="w-full bg-red-600 text-white px-6 py-3 rounded font-bold hover:bg-red-700">Save Changes</button></div>
@@ -252,7 +301,6 @@ export default function ManageMovies({ categoryTitle }) {
                     <div className={`px-2 py-1 rounded text-xs font-bold text-white ${badgeClass}`}>
                       {badgeText}
                     </div>
-                    {/* Agar status Error hai to chota sa Retry button show hoga */}
                     {currentStatus === 'error' && (
                       <button 
                         onClick={() => retryCheck(movie)}
