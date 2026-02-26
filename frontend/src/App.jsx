@@ -1,10 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
-import Player from './pages/Player';
 import Navbar from './components/Navbar';
 import Hollywood from './pages/Hollywood';
 import Bollywood from './pages/Bollywood';
+import MovieDetail from './pages/MovieDetail';
+// Note: Ab humein Player.jsx ki zaroorat nahi kyunke MovieDetail mein hi player laga hua hai!
 
 const App = () => {
   return (
@@ -15,7 +16,12 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/hollywood" element={<Hollywood />} />
           <Route path="/bollywood" element={<Bollywood />} />
-          <Route path="/watch/:id" element={<Player />} />
+          
+          {/* 🔥 JADU YAHAN HAI: 
+              Ab poster par click karne se (jo /watch/ pe bhejta hai), 
+              direct movie nahi chalegi balki tumhara VIP MovieDetail page khulega! 
+          */}
+          <Route path="/watch/:id" element={<MovieDetail />} />
         </Routes>
       </div>
     </Router>
