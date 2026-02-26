@@ -12,15 +12,18 @@ const Home = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  // 🔥 YEAR FILTER STATE
+  const [selectedYear, setSelectedYear] = useState('');
+
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
-  // 1. Jab Search badlay, to page 1 aur movies reset kardo
+  // 1. Jab Search ya Year badlay, to page 1 aur movies reset kardo
   useEffect(() => {
     setMovies([]);
     setPage(1);
     setHasMore(true);
-  }, [searchQuery]);
+  }, [searchQuery, selectedYear]); // selectedYear add kar diya
 
   // 2. Backend se movies mangwana (🔥 DEBOUNCE + ABORT CONTROLLER MAGIC)
   useEffect(() => {
@@ -39,6 +42,11 @@ const Home = () => {
           url = `${import.meta.env.VITE_API_URL}/api/movies/search?q=${searchQuery}&page=${page}&limit=20`;
         } else {
           url = `${import.meta.env.VITE_API_URL}/api/movies/all?page=${page}&limit=20`;
+        }
+
+        // 🔥 AGAR YEAR SELECT HUA HAI, TO URL MEIN BHI BHEJO
+        if (selectedYear) {
+            url += `&year=${selectedYear}`;
         }
 
         // 🔥 Yahan humne signal add kiya hai taake request raste mein ruki ja sakay
@@ -67,7 +75,6 @@ const Home = () => {
     };
 
     // 🔥 DEBOUNCE JADU: User ke type karne ke 300ms (0.3s) baad API hit hogi
-    // Taake har ek lafz par server par bojh na paray!
     const delayTimer = setTimeout(() => {
       fetchMovies();
     }, 300);
@@ -78,7 +85,7 @@ const Home = () => {
       clearTimeout(delayTimer); 
       controller.abort(); 
     };
-  }, [page, searchQuery]);
+  }, [page, searchQuery, selectedYear]); // Dependencies update kar di
 
   // 3. Infinite Scroll Listener
   useEffect(() => {
@@ -94,13 +101,33 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loading, loadingMore]);
 
+  // Saal (Years) ki list (2026 se 2000 tak)
+  const yearsList = Array.from({ length: 27 }, (_, i) => 2026 - i);
 
   return (
     <div className="p-4 md:p-8">
-      {/* Title */}
-      <h1 className="text-2xl md:text-4xl font-bold text-red-600 mb-8">
-        {searchQuery ? `Search Results for "${searchQuery}"` : "Latest Movies"}
-      </h1>
+      
+      {/* HEADER AUR YEAR DROPDOWN */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <h1 className="text-2xl md:text-4xl font-bold text-red-600">
+          {searchQuery ? `Search Results for "${searchQuery}"` : "Latest Movies"}
+        </h1>
+
+        {/* 🔥 NAYA SELECT YEAR DROPDOWN (Red Theme) */}
+        <div className="flex items-center gap-2 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700 shadow-lg">
+            <label className="text-gray-400 font-semibold text-sm whitespace-nowrap">Filter Year:</label>
+            <select 
+                value={selectedYear} 
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-black text-red-500 font-bold border-none focus:outline-none focus:ring-0 cursor-pointer text-sm"
+            >
+                <option value="">All Years</option>
+                {yearsList.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                ))}
+            </select>
+        </div>
+      </div>
 
       {/* Movies Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
@@ -114,7 +141,9 @@ const Home = () => {
           ))
         ) : movies.length === 0 ? (
           <div className="col-span-full text-center text-gray-400 mt-10">
-            <p className="text-xl">Koi movie nahi mili "{searchQuery}" ke naam se 😢</p>
+            <p className="text-xl">
+              {selectedYear ? `Koi movie nahi mili ${selectedYear} saal ki 😢` : `Koi movie nahi mili "${searchQuery}" ke naam se 😢`}
+            </p>
           </div>
         ) : (
           movies.map((movie) => (
