@@ -42,9 +42,9 @@ export const getMovies = async (req, res) => {
     }
 };
 
-// 3. Search Movie (Indexed)
 export const searchMovies = async (req, res) => {
-    const query = req.query.q;
+    // Agar user ne kuch na likha ho to khali string set kardo
+    const query = req.query.q || ''; 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
@@ -53,12 +53,16 @@ export const searchMovies = async (req, res) => {
     const languageFilter = req.query.language; 
 
     try {
-        let dbQuery = { $text: { $search: query } };
+        // 🔥 JADU YAHAN HAI: $text ki jagah $regex use kiya hai.
+        // $options: 'i' ka matlab hai case-insensitive (chotay baray huroof ka farq nahi parega)
+        let dbQuery = { title: { $regex: query, $options: 'i' } };
+        
         if (languageFilter) {
             dbQuery.language = languageFilter;
         }
 
         const movies = await Movie.find(dbQuery)
+            .sort({ createdAt: -1 }) // Latest movies pehle aayengi
             .skip(skip)
             .limit(limit);
 
