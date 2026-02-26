@@ -197,7 +197,7 @@ export default function ManageMovies({ categoryTitle }) {
             <select 
               value={selectedYear} 
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="bg-transparent text-white font-bold border-none focus:outline-none focus:ring-0 cursor-pointer text-sm"
+              className="bg-transparent text-black font-bold border-none focus:outline-none focus:ring-0 cursor-pointer text-sm"
             >
               <option value="">All Years</option>
               {yearsList.map(year => (
