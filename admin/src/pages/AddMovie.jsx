@@ -56,7 +56,8 @@ const AddMovie = () => {
           description: tmdbMovie.overview || '',
 
           year: releaseYear,
-          language: tmdbMovie.original_language === 'hi' ? 'Hindi' : tmdbMovie.original_language === 'en' ? 'English' : 'Dual Audio'
+          // Agar movie Hindi hai to 'Hindi' likho, warna baqi sab ko 'Dual Audio' kardo
+          language: tmdbMovie.original_language === 'hi' ? 'Hindi' : 'Dual Audio'
         });
 
         toast.success("Magic! ✨ Movie Data Auto-Filled!");
