@@ -82,16 +82,16 @@ const AddMovie = () => {
     }
   };
 
-  // === 🚀 VIP MAGIC FUNCTION: Auto-Fetch Top 100 Bollywood Movies ===
-  const autoFetchTop100 = async () => {
-    const confirmImport = window.confirm("Kya aap waqai 2020 ki Top 100 Bollywood movies automatically add karna chahte hain? Isme 1-2 minute lag sakte hain!");
+  // === 🚀 VIP MAGIC FUNCTION: Auto-Fetch Top 50 Bollywood Movies ===
+  const autoFetchTop50 = async () => {
+    const confirmImport = window.confirm("Kya aap waqai 2020 ki Top 50 Bollywood movies automatically add karna chahte hain? Isme 1-2 minute lag sakte hain!");
     if (!confirmImport) return;
 
     setBulkLoading(true);
     let addedCount = 0;
 
     try {
-      // 5 Pages loop chalega (Har page par 20 movies = 100 movies total)
+      // 5 Pages loop chalega (Har page par 20 movies = 50 movies total)
       for (let page = 1; page <= 5; page++) {
         setBulkProgress(`TMDB se Page ${page} ki movies dhoondh raha hoon...`);
         
@@ -175,14 +175,14 @@ const AddMovie = () => {
       {/* === 🔥 VIP AUTO FETCH BUTTON === */}
       <div className="mb-8 p-4 bg-gray-900 border-2 border-dashed border-red-500 rounded-lg text-center">
         <h3 className="text-xl text-red-500 font-bold mb-2">🔥 Auto-Import Magic</h3>
-        <p className="text-sm text-gray-400 mb-4">Click karte hi 2020 ki top 100 Bollywood movies aapke database mein khud add ho jayengi!</p>
+        <p className="text-sm text-gray-400 mb-4">Click karte hi 2020 ki top 50 Bollywood movies aapke database mein khud add ho jayengi!</p>
         <button
           type="button"
-          onClick={autoFetchTop100}
+          onClick={autoFetchTop50}
           disabled={bulkLoading || loading}
           className={`w-full py-3 font-bold text-white rounded shadow-lg transition-all ${bulkLoading ? 'bg-gray-600 cursor-not-allowed animate-pulse' : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700'}`}
         >
-          {bulkLoading ? `Rukiye... ${bulkProgress}` : "🚀 Auto-Fetch Top 100 Bollywood Movies (2020)"}
+          {bulkLoading ? `Rukiye... ${bulkProgress}` : "🚀 Auto-Fetch Top 50 Bollywood Movies (2020)"}
         </button>
       </div>
 
