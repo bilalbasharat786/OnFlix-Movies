@@ -7,39 +7,50 @@ const Bollywood = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // === 🚀 INFINITE SCROLL STATES ===
+  // === 🚀 STATES ===
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  
+  // 🔥 YEAR FILTER STATE
+  const [selectedYear, setSelectedYear] = useState('');
 
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
-  // 1. Jab Search badlay, to page 1 aur movies reset kardo
+  // 1. Jab Search ya Year badlay, to page 1 aur movies reset kardo
   useEffect(() => {
     setMovies([]);
     setPage(1);
     setHasMore(true);
-  }, [searchQuery]);
+  }, [searchQuery, selectedYear]); // selectedYear add kar diya
 
-  // 2. Backend se movies mangwana (Sirf Bollywood / Hindi)
+  // 2. Backend se movies mangwana (Bollywood + Search + Year Filter)
   useEffect(() => {
+    // AbortController taake double requests ruk jayein
+    const controller = new AbortController();
+
     const fetchMovies = async () => {
-      if (!hasMore) return; 
+      if (!hasMore && page !== 1) return; 
 
       if (page === 1) setLoading(true);
       else setLoadingMore(true);
 
       try {
+        // Base URL set kar rahe hain (Category hamesha Bollywood rahegi)
         let url = "";
-        // 🔥 JADU YAHAN HAI: Humne API ke end mein '&language=Hindi' lagaya hai
         if (searchQuery) {
-          url = `${import.meta.env.VITE_API_URL}/api/movies/search?q=${searchQuery}&page=${page}&limit=20&language=Hindi`;
+          url = `${import.meta.env.VITE_API_URL}/api/movies/search?q=${searchQuery}&page=${page}&limit=20&category=Bollywood`;
         } else {
           url = `${import.meta.env.VITE_API_URL}/api/movies/all?page=${page}&limit=20&category=Bollywood`;
         }
 
-        const res = await axios.get(url);
+        // 🔥 AGAR YEAR SELECT HUA HAI, TO URL MEIN BHI BHEJO
+        if (selectedYear) {
+            url += `&year=${selectedYear}`;
+        }
+
+        const res = await axios.get(url, { signal: controller.signal });
 
         if (page === 1) {
           setMovies(res.data);
@@ -51,15 +62,24 @@ const Bollywood = () => {
           setHasMore(false);
         }
       } catch (error) {
-        console.error("Error fetching movies:", error);
+        if (!axios.isCancel(error)) {
+            console.error("Error fetching movies:", error);
+        }
       } finally {
         setLoading(false);
         setLoadingMore(false);
       }
     };
 
-    fetchMovies();
-  }, [page, searchQuery]);
+    const delayTimer = setTimeout(() => {
+        fetchMovies();
+    }, 300);
+
+    return () => {
+        clearTimeout(delayTimer);
+        controller.abort();
+    };
+  }, [page, searchQuery, selectedYear]);
 
   // 3. Infinite Scroll Listener
   useEffect(() => {
@@ -75,11 +95,33 @@ const Bollywood = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loading, loadingMore]);
 
+  // Saal (Years) ki list banane ka asaan tareeqa (2026 se 2000 tak)
+  const yearsList = Array.from({ length: 27 }, (_, i) => 2026 - i);
+
   return (
     <div className="p-4 md:p-8 min-h-screen bg-black">
-      <h1 className="text-2xl md:text-4xl font-bold text-green-500 mb-8">
-        {searchQuery ? `Search Results for "${searchQuery}" in Bollywood` : "Bollywood Movies"}
-      </h1>
+      
+      {/* HEADER AUR YEAR DROPDOWN */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <h1 className="text-2xl md:text-4xl font-bold text-green-500">
+            {searchQuery ? `Search Results for "${searchQuery}"` : "Bollywood Movies"}
+        </h1>
+        
+        {/* 🔥 NAYA SELECT YEAR DROPDOWN */}
+        <div className="flex items-center gap-2 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700 shadow-lg">
+            <label className="text-gray-400 font-semibold text-sm whitespace-nowrap">Filter Year:</label>
+            <select 
+                value={selectedYear} 
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-black text-green-400 font-bold border-none focus:outline-none focus:ring-0 cursor-pointer text-sm"
+            >
+                <option value="">All Years</option>
+                {yearsList.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                ))}
+            </select>
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
         {loading && page === 1 ? (
@@ -91,7 +133,9 @@ const Bollywood = () => {
           ))
         ) : movies.length === 0 ? (
           <div className="col-span-full text-center text-gray-400 mt-10">
-            <p className="text-xl">Koi Bollywood movie nahi mili 😢</p>
+            <p className="text-xl">
+                {selectedYear ? `Koi movie nahi mili ${selectedYear} saal ki 😢` : 'Koi Bollywood movie nahi mili 😢'}
+            </p>
           </div>
         ) : (
           movies.map((movie) => (

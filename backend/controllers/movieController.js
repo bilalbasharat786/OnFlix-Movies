@@ -20,13 +20,17 @@ export const getMovies = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
     
-    // 🔥 Nayi Cheez: Ab hum Category dhoondhenge
     const categoryFilter = req.query.category; 
+    const yearFilter = req.query.year; // 🔥 NAYI CHEEZ: Frontend se aane wala saal
 
     try {
         let query = {};
         if (categoryFilter) {
-            query.category = categoryFilter; // e.g., category: "Hollywood"
+            query.category = categoryFilter; 
+        }
+        // 🔥 JADU: Agar saal select hua hai, to Database mein sirf wahi saal dhoondo
+        if (yearFilter) {
+            query.year = parseInt(yearFilter);
         }
 
         const movies = await Movie.find(query)
@@ -49,12 +53,17 @@ export const searchMovies = async (req, res) => {
     const skip = (page - 1) * limit;
     
     const categoryFilter = req.query.category; 
+    const yearFilter = req.query.year; // 🔥 NAYI CHEEZ
 
     try {
         let dbQuery = { title: { $regex: query, $options: 'i' } };
         
         if (categoryFilter) {
             dbQuery.category = categoryFilter;
+        }
+        // 🔥 Search mein bhi year filter laga diya
+        if (yearFilter) {
+            dbQuery.year = parseInt(yearFilter);
         }
 
         const movies = await Movie.find(dbQuery)
