@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Search, Menu, X, Film } from 'lucide-react';
 
 const Navbar = () => {
@@ -8,17 +8,25 @@ const Navbar = () => {
   // URL se search word nikalne ke liye
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation(); // Yeh pata lagane ke liye ke user kis page par hai
+  
   const searchQuery = searchParams.get('q') || '';
 
-  // === MAGIC: Super Fast Search Logic ===
+  // === 🔥 MAGIC: Super Fast Global Search Logic ===
   const handleSearch = (e) => {
     const query = e.target.value;
+    
     if (query) {
-      // User type karte hi url mein query bhej do
+      // User chahay kisi bhi page par ho, type karte hi usay Home (/) par bhej do 
+      // taake poore database mein Global Search lag sakay!
       navigate(`/?q=${query}`); 
     } else {
-      // Agar backspace karke search khali kar de, to wapis normal Home
-      navigate('/'); 
+      // Agar user backspace karke search bilkul khali kar de
+      if (location.pathname === '/') {
+        navigate('/'); // Agar Home par hai to wahi fresh page load kar do
+      } else {
+        navigate(location.pathname); // Agar kisi aur page par hai to wahi rehne do
+      }
     }
   };
 
@@ -49,7 +57,7 @@ const Navbar = () => {
           <div className="hidden md:block flex-1 max-w-md ml-8 relative">
             <input 
               type="text" 
-              placeholder="Search movies..."
+              placeholder="Search movies globally..."
               value={searchQuery}
               onChange={handleSearch}
               className="w-full py-2 pl-4 pr-10 text-white bg-gray-800 border border-gray-700 rounded-full focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all text-sm"
@@ -77,7 +85,7 @@ const Navbar = () => {
           <div className="relative mt-2">
             <input 
               type="text" 
-              placeholder="Search movies..."
+              placeholder="Search movies globally..."
               value={searchQuery}
               onChange={handleSearch}
               className="w-full py-2 pl-4 pr-10 text-white bg-gray-800 border border-gray-700 rounded-full focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-all text-sm"
