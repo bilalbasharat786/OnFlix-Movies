@@ -154,9 +154,6 @@ const Home = () => {
                       alt={movie.title} 
                       className="w-full h-full object-cover transform group-hover:scale-110 transition duration-300"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex items-center justify-center transition duration-300">
-                      <Play className="text-white opacity-0 group-hover:opacity-100 w-12 h-12" fill="white" />
-                    </div>
                   </div>
 
                   {/* 🔥 RATING BADGE (Bilkul TMDB Style) */}
