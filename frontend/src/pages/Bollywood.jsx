@@ -23,11 +23,10 @@ const Bollywood = () => {
     setMovies([]);
     setPage(1);
     setHasMore(true);
-  }, [searchQuery, selectedYear]); // selectedYear add kar diya
+  }, [searchQuery, selectedYear]);
 
   // 2. Backend se movies mangwana (Bollywood + Search + Year Filter)
   useEffect(() => {
-    // AbortController taake double requests ruk jayein
     const controller = new AbortController();
 
     const fetchMovies = async () => {
@@ -37,7 +36,6 @@ const Bollywood = () => {
       else setLoadingMore(true);
 
       try {
-        // Base URL set kar rahe hain (Category hamesha Bollywood rahegi)
         let url = "";
         if (searchQuery) {
           url = `${import.meta.env.VITE_API_URL}/api/movies/search?q=${searchQuery}&page=${page}&limit=20&category=Bollywood`;
@@ -45,7 +43,6 @@ const Bollywood = () => {
           url = `${import.meta.env.VITE_API_URL}/api/movies/all?page=${page}&limit=20&category=Bollywood`;
         }
 
-        // 🔥 AGAR YEAR SELECT HUA HAI, TO URL MEIN BHI BHEJO
         if (selectedYear) {
             url += `&year=${selectedYear}`;
         }
@@ -95,7 +92,6 @@ const Bollywood = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loading, loadingMore]);
 
-  // Saal (Years) ki list banane ka asaan tareeqa (2026 se 2000 tak)
   const yearsList = Array.from({ length: 27 }, (_, i) => 2026 - i);
 
   return (
@@ -107,7 +103,6 @@ const Bollywood = () => {
             {searchQuery ? `Search Results for "${searchQuery}"` : "Bollywood Movies"}
         </h1>
         
-        {/* 🔥 NAYA SELECT YEAR DROPDOWN */}
         <div className="flex items-center gap-2 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700 shadow-lg">
             <label className="text-gray-400 font-semibold text-sm whitespace-nowrap">Filter Year:</label>
             <select 
@@ -123,7 +118,7 @@ const Bollywood = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-x-6 md:gap-y-10">
         {loading && page === 1 ? (
           [...Array(10)].map((_, i) => (
             <div key={i} className="animate-pulse">
@@ -138,22 +133,52 @@ const Bollywood = () => {
             </p>
           </div>
         ) : (
-          movies.map((movie) => (
-            <Link to={`/watch/${movie._id}`} key={movie._id} className="group relative shadow-lg">
-              <div className="relative overflow-hidden rounded-lg aspect-[2/3]">
-                <img 
-                  src={movie.posterUrl} 
-                  alt={movie.title} 
-                  className="w-full h-full object-cover transform group-hover:scale-110 transition duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex items-center justify-center transition duration-300">
-                  <Play className="text-white opacity-0 group-hover:opacity-100 w-12 h-12" fill="white" />
+          movies.map((movie) => {
+            // 🔥 RATING LOGIC
+            const percentage = movie.rating ? Math.round(Number(movie.rating) * 10) : 0;
+            const ringColor = percentage >= 70 ? 'border-[#21d07a]' : percentage >= 50 ? 'border-[#d2d531]' : 'border-[#db2360]';
+
+            return (
+              <Link to={`/watch/${movie._id}`} key={movie._id} className="group relative shadow-lg flex flex-col">
+                
+                {/* === POSTER & OVERLAPPING BADGE CONTAINER === */}
+                <div className="relative w-full">
+                  <div className="relative overflow-hidden rounded-lg aspect-[2/3]">
+                    <img 
+                      src={movie.posterUrl} 
+                      alt={movie.title} 
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex items-center justify-center transition duration-300">
+                      <Play className="text-white opacity-0 group-hover:opacity-100 w-12 h-12" fill="white" />
+                    </div>
+                  </div>
+
+                  {/* 🔥 RATING BADGE */}
+                  {percentage > 0 && (
+                    <div className={`absolute -bottom-5 left-3 w-10 h-10 md:w-11 md:h-11 bg-[#081c22] rounded-full flex items-center justify-center border-[3px] shadow-lg z-10 ${ringColor}`}>
+                      <span className="text-white text-xs md:text-sm font-bold">
+                        {percentage}<span className="text-[8px] font-normal">%</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <h3 className="mt-2 text-sm md:text-lg font-semibold truncate text-white">{movie.title}</h3>
-              <p className="text-gray-400 text-xs md:text-sm">{movie.year} • {movie.language}</p>
-            </Link>
-          ))
+
+                {/* === MOVIE DETAILS === */}
+                <div className="mt-6 flex flex-col">
+                  <h3 className="text-sm md:text-lg font-semibold truncate text-white" title={movie.title}>{movie.title}</h3>
+                  <p className="text-gray-400 text-xs md:text-sm mt-0.5">{movie.year} • {movie.language}</p>
+                  
+                  {/* 🔥 GENRES */}
+                  {movie.genres && (
+                    <p className="text-gray-500 text-[10px] md:text-xs truncate mt-0.5" title={movie.genres}>
+                      {movie.genres}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            );
+          })
         )}
       </div>
 
