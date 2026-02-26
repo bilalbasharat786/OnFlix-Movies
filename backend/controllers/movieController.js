@@ -15,50 +15,65 @@ export const addMovie = async (req, res) => {
 };
 
 // 2. Get All Movies (with Pagination & CATEGORY Filter)
-// 2. Get All Movies 
 export const getMovies = async (req, res) => {
-    // ... (purana code)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    
     const categoryFilter = req.query.category; 
-    const yearFilter = req.query.year; 
-    const genreFilter = req.query.genre; // 🔥 NAYI CHEEZ
+    const yearFilter = req.query.year; // 🔥 NAYI CHEEZ: Frontend se aane wala saal
 
     try {
         let query = {};
-        if (categoryFilter) query.category = categoryFilter; 
-        if (yearFilter) query.year = parseInt(yearFilter);
-        
-        // 🔥 JADU: Genre filtering (Case-insensitive)
-        if (genreFilter) {
-            query.genres = { $regex: genreFilter, $options: 'i' }; 
+        if (categoryFilter) {
+            query.category = categoryFilter; 
+        }
+        // 🔥 JADU: Agar saal select hua hai, to Database mein sirf wahi saal dhoondo
+        if (yearFilter) {
+            query.year = parseInt(yearFilter);
         }
 
-        const movies = await Movie.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
+        const movies = await Movie.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+            
         res.status(200).json(movies);
     } catch (error) {
+        console.error("Error fetching movies:", error);
         res.status(500).json(error);
     }
 };
 
-// 3. Search Movies 
+// 3. Search Movie (with CATEGORY Filter)
 export const searchMovies = async (req, res) => {
-    // ... (purana code)
+    const query = req.query.q || ''; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    
     const categoryFilter = req.query.category; 
-    const yearFilter = req.query.year; 
-    const genreFilter = req.query.genre; // 🔥 NAYI CHEEZ
+    const yearFilter = req.query.year; // 🔥 NAYI CHEEZ
 
     try {
-        let dbQuery = { title: { $regex: req.query.q || '', $options: 'i' } };
-        if (categoryFilter) dbQuery.category = categoryFilter;
-        if (yearFilter) dbQuery.year = parseInt(yearFilter);
+        let dbQuery = { title: { $regex: query, $options: 'i' } };
         
-        // 🔥 Genre filtering in Search
-        if (genreFilter) {
-            dbQuery.genres = { $regex: genreFilter, $options: 'i' };
+        if (categoryFilter) {
+            dbQuery.category = categoryFilter;
+        }
+        // 🔥 Search mein bhi year filter laga diya
+        if (yearFilter) {
+            dbQuery.year = parseInt(yearFilter);
         }
 
-        const movies = await Movie.find(dbQuery).sort({ createdAt: -1 }).skip(skip).limit(limit);
+        const movies = await Movie.find(dbQuery)
+            .sort({ createdAt: -1 }) 
+            .skip(skip)
+            .limit(limit);
+
         res.status(200).json(movies);
     } catch (error) {
+        console.error("Error searching movie:", error);
         res.status(500).json(error);
     }
 };
