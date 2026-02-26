@@ -4,15 +4,19 @@ import axios from 'axios';
 import { Play, Star, Clock, Calendar, ArrowLeft } from 'lucide-react';
 
 const MovieDetail = () => {
-  const { id } = useParams(); // URL se movie ki Mongo ID nikalna
+  const { id } = useParams(); 
   const [movie, setMovie] = useState(null);
   
   // TMDB se aane wali extra details
   const [tmdbDetails, setTmdbDetails] = useState(null);
   const [cast, setCast] = useState([]);
+  const [trailerKey, setTrailerKey] = useState(null); // 🔥 Trailer ke liye nayi state
   
   const [loading, setLoading] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false); // Player on/off karne ke liye
+  
+  // 🔥 Player Control States
+  const [isTrailerPlaying, setIsTrailerPlaying] = useState(false); 
+  const [isMoviePlaying, setIsMoviePlaying] = useState(false); 
 
   const TMDB_API_KEY = "944a4dcfa30d2998783dd7ba8ba5c664";
 
@@ -25,7 +29,7 @@ const MovieDetail = () => {
         const movieData = res.data;
         setMovie(movieData);
 
-        // 2. IMDB ID use karke TMDB se Background aur Cast mangwao
+        // 2. IMDB ID use karke TMDB se Background, Cast aur TRAILER mangwao
         if (movieData.imdbId) {
           const findUrl = `https://api.themoviedb.org/3/find/${movieData.imdbId}?external_source=imdb_id&api_key=${TMDB_API_KEY}`;
           const tmdbRes = await axios.get(findUrl);
@@ -40,6 +44,13 @@ const MovieDetail = () => {
             // TMDB se Cast (Actors)
             const creditsRes = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}/credits?api_key=${TMDB_API_KEY}`);
             setCast(creditsRes.data.cast.slice(0, 8)); // Sirf shuru ke 8 actors lenge
+
+            // 🔥 TMDB se Videos (Trailer) nikalna
+            const videoRes = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}/videos?api_key=${TMDB_API_KEY}`);
+            const ytTrailer = videoRes.data.results.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
+            if(ytTrailer) {
+                setTrailerKey(ytTrailer.key);
+            }
           }
         }
       } catch (error) {
@@ -73,56 +84,80 @@ const MovieDetail = () => {
   // Background Image Logic
   const backdropUrl = tmdbDetails?.backdrop_path 
     ? `https://image.tmdb.org/t/p/original${tmdbDetails.backdrop_path}` 
-    : movie.posterUrl; // Agar background na ho to poster ko hi background bana do
+    : movie.posterUrl; 
 
-  // Player URL Logic
+  // Player URLs
   const videoUrl = movie.customUrl && movie.customUrl !== "" 
     ? movie.customUrl 
     : `https://vsembed.ru/embed/movie/${movie.imdbId}`;
+    
+  const youtubeTrailerUrl = `https://www.youtube.com/embed/${trailerKey}?autoplay=1`;
+
+  // Movie Play Karne Ka Function (Scroll top kar dega)
+  const handlePlayMovie = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsTrailerPlaying(false);
+    setIsMoviePlaying(true);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white pb-12">
       
       {/* === BACK BUTTON === */}
       <div className="absolute top-20 md:top-24 left-4 md:left-8 z-50">
-        <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-300 hover:text-white bg-black/50 px-3 py-2 rounded-lg transition backdrop-blur-sm">
+        <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-300 hover:text-white bg-black/50 px-3 py-2 rounded-lg transition backdrop-blur-sm hover:bg-black/80">
           <ArrowLeft size={20} /> <span className="font-bold hidden sm:block">Back</span>
         </button>
       </div>
 
-      {/* === TOP HERO SECTION (Backdrop + Player) === */}
+      {/* === TOP HERO SECTION (Backdrop + Players) === */}
       <div className="relative w-full h-[40vh] md:h-[70vh] lg:h-[80vh]">
         
-        {/* Agar isPlaying true hai to Player dikhao, warna Background Image */}
-        {isPlaying ? (
-          <div className="w-full h-full pt-16 md:pt-0">
+        {isMoviePlaying ? (
+          // 🔥 FULL MOVIE PLAYER (VidSrc)
+          <div className="w-full h-full pt-16 md:pt-0 bg-black">
             <iframe 
               src={videoUrl} 
               className="w-full h-full border-none" 
               allowFullScreen
             ></iframe>
           </div>
+        ) : isTrailerPlaying && trailerKey ? (
+          // 🔥 YOUTUBE TRAILER PLAYER
+          <div className="w-full h-full pt-16 md:pt-0 bg-black">
+            <iframe 
+              src={youtubeTrailerUrl} 
+              className="w-full h-full border-none" 
+              allowFullScreen
+              allow="autoplay; encrypted-media"
+            ></iframe>
+          </div>
         ) : (
+          // 🖼️ NORMAL BACKDROP + TRAILER BUTTON
           <>
             <img 
               src={backdropUrl} 
               alt="Backdrop" 
               className="w-full h-full object-cover opacity-40 md:opacity-50"
             />
-            {/* Neechay se dark gradient taake text sahi nazar aaye */}
+            {/* Dark gradient for text visibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
             
-            {/* Center Play Button (Agar isPlaying false hai) */}
+            {/* Center Play Trailer Button */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <button 
-                onClick={() => setIsPlaying(true)}
-                className="group flex flex-col items-center gap-3 transition transform hover:scale-110"
-              >
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-red-600 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.6)] group-hover:shadow-[0_0_50px_rgba(220,38,38,0.8)] transition">
-                  <Play size={32} className="text-white ml-2" fill="white" />
-                </div>
-                <span className="font-bold text-lg md:text-xl tracking-wider text-gray-200 group-hover:text-white transition">PLAY MOVIE</span>
-              </button>
+              {trailerKey ? (
+                <button 
+                  onClick={() => setIsTrailerPlaying(true)}
+                  className="group flex flex-col items-center gap-3 transition transform hover:scale-110"
+                >
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border-2 border-white/50 group-hover:border-white group-hover:bg-white/30 transition">
+                    <Play size={32} className="text-white ml-2" fill="white" />
+                  </div>
+                  <span className="font-bold text-lg md:text-xl tracking-wider text-gray-200 group-hover:text-white transition drop-shadow-md">WATCH TRAILER</span>
+                </button>
+              ) : (
+                <span className="text-gray-400 font-bold bg-black/50 px-4 py-2 rounded-lg backdrop-blur-sm">No Trailer Available</span>
+              )}
             </div>
           </>
         )}
@@ -132,8 +167,8 @@ const MovieDetail = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 md:-mt-32 relative z-10">
         <div className="flex flex-col md:flex-row gap-8">
           
-          {/* Left Side: Poster (Chup jayega small screens par agar player on ho) */}
-          <div className={`w-1/3 md:w-1/4 lg:w-1/5 shrink-0 mx-auto md:mx-0 ${isPlaying ? 'hidden md:block' : 'block'}`}>
+          {/* Left Side: Poster (Chup jayega jab movie/trailer chal raha ho mobile par) */}
+          <div className={`w-1/3 md:w-1/4 lg:w-1/5 shrink-0 mx-auto md:mx-0 ${isMoviePlaying || isTrailerPlaying ? 'hidden md:block' : 'block'}`}>
             <img 
               src={movie.posterUrl} 
               alt={movie.title} 
@@ -147,7 +182,8 @@ const MovieDetail = () => {
               {movie.title}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-4 text-sm md:text-base text-gray-300 mb-6 font-medium">
+            {/* Tags: Rating, Year, Runtime, Category, Language */}
+            <div className="flex flex-wrap items-center gap-4 text-sm md:text-base text-gray-300 mb-4 font-medium">
               {movie.rating && (
                 <div className="flex items-center gap-1 text-yellow-500">
                   <Star size={18} fill="currentColor" />
@@ -172,16 +208,29 @@ const MovieDetail = () => {
               </div>
             </div>
 
+            {/* Genres */}
             {movie.genres && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {movie.genres.split(',').map((genre, index) => (
-                  <span key={index} className="px-3 py-1 bg-white/10 rounded-full text-xs md:text-sm font-semibold text-gray-200">
+                  <span key={index} className="px-3 py-1 bg-gray-800/80 border border-gray-700 rounded-full text-xs md:text-sm font-semibold text-gray-300">
                     {genre.trim()}
                   </span>
                 ))}
               </div>
             )}
 
+            {/* 🔥 NEW: PLAY FULL MOVIE BUTTON (Asal Movie yahan se chalegi) */}
+            <div className="mb-8">
+              <button 
+                onClick={handlePlayMovie}
+                className="flex items-center gap-3 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold text-sm md:text-base transition transform hover:-translate-y-1 shadow-[0_0_20px_rgba(220,38,38,0.5)]"
+              >
+                <Play size={20} fill="white" />
+                PLAY FULL MOVIE
+              </button>
+            </div>
+
+            {/* Description */}
             <p className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed max-w-4xl mb-8">
               {movie.description || tmdbDetails?.overview || "Is movie ki description abhi tak mojud nahi hai."}
             </p>
