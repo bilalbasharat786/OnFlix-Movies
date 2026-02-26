@@ -36,7 +36,7 @@ const Bollywood = () => {
         if (searchQuery) {
           url = `${import.meta.env.VITE_API_URL}/api/movies/search?q=${searchQuery}&page=${page}&limit=20&language=Hindi`;
         } else {
-          url = `${import.meta.env.VITE_API_URL}/api/movies/all?page=${page}&limit=20&language=Hindi`;
+          url = `${import.meta.env.VITE_API_URL}/api/movies/all?page=${page}&limit=20&category=Bollywood`;
         }
 
         const res = await axios.get(url);

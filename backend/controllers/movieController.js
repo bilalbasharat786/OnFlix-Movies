@@ -1,4 +1,4 @@
-import Movie from '../models/movieModel.js'; // Note: .js extension zaroori hai
+import Movie from '../models/movieModel.js'; 
 
 // 1. Add Movie
 export const addMovie = async (req, res) => {
@@ -14,20 +14,19 @@ export const addMovie = async (req, res) => {
     }
 };
 
-// 2. Get All Movies (with Pagination)
+// 2. Get All Movies (with Pagination & CATEGORY Filter)
 export const getMovies = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
     
-    // Nayi Cheez: URL se language nikalna
-    const languageFilter = req.query.language; 
+    // 🔥 Nayi Cheez: Ab hum Category dhoondhenge
+    const categoryFilter = req.query.category; 
 
     try {
         let query = {};
-        // Agar frontend ne language bheji hai (jaise Bollywood page par), to sirf wo movies lao
-        if (languageFilter) {
-            query.language = languageFilter;
+        if (categoryFilter) {
+            query.category = categoryFilter; // e.g., category: "Hollywood"
         }
 
         const movies = await Movie.find(query)
@@ -42,27 +41,24 @@ export const getMovies = async (req, res) => {
     }
 };
 
+// 3. Search Movie (with CATEGORY Filter)
 export const searchMovies = async (req, res) => {
-    // Agar user ne kuch na likha ho to khali string set kardo
     const query = req.query.q || ''; 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
     
-    // Nayi Cheez: Search mein bhi language filter add kar diya
-    const languageFilter = req.query.language; 
+    const categoryFilter = req.query.category; 
 
     try {
-        // 🔥 JADU YAHAN HAI: $text ki jagah $regex use kiya hai.
-        // $options: 'i' ka matlab hai case-insensitive (chotay baray huroof ka farq nahi parega)
         let dbQuery = { title: { $regex: query, $options: 'i' } };
         
-        if (languageFilter) {
-            dbQuery.language = languageFilter;
+        if (categoryFilter) {
+            dbQuery.category = categoryFilter;
         }
 
         const movies = await Movie.find(dbQuery)
-            .sort({ createdAt: -1 }) // Latest movies pehle aayengi
+            .sort({ createdAt: -1 }) 
             .skip(skip)
             .limit(limit);
 
@@ -72,6 +68,8 @@ export const searchMovies = async (req, res) => {
         res.status(500).json(error);
     }
 };
+
+// 4. Get By ID
 export const getMovieById = async (req, res) => {
     try {
         const movie = await Movie.findById(req.params.id);
@@ -82,17 +80,16 @@ export const getMovieById = async (req, res) => {
         res.status(500).json(error);
     }
 };
-// 5. Update Movie Details (FIXED CODE)
+
+// 5. Update Movie Details (FIXED CODE with Category)
 export const updateMovie = async (req, res) => {
     try {
-        // 🔥 ASAL MASLA YAHAN THA! 
-        // Ab humne exact wahi spelling aur naam likhe hain jo AddMovie aur Database mein hain
-        const { title, posterUrl, imdbId, customUrl, description, year, language } = req.body;
+        // Yahan category bhi add kardi hai
+        const { title, posterUrl, imdbId, customUrl, description, year, language, category } = req.body;
         
-        // Movie dhoond kar naya exact data update karega
         const updatedMovie = await Movie.findByIdAndUpdate(
             req.params.id,
-            { title, posterUrl, imdbId, customUrl, description, year, language },
+            { title, posterUrl, imdbId, customUrl, description, year, language, category },
             { new: true } 
         );
 
@@ -110,7 +107,6 @@ export const updateMovie = async (req, res) => {
 // 6. Delete Movie Permanently
 export const deleteMovie = async (req, res) => {
     try {
-        // ID ke zariye movie dhoondh kar hamesha ke liye delete kar dega
         const deletedMovie = await Movie.findByIdAndDelete(req.params.id);
         
         if (!deletedMovie) {
