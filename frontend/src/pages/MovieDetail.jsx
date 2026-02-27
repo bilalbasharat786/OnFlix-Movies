@@ -115,12 +115,16 @@ const MovieDetail = () => {
         
         {isMoviePlaying ? (
           // 🔥 FULL MOVIE PLAYER (VidSrc)
-          <div className="w-full h-full pt-16 md:pt-0 bg-black">
-            <iframe 
-              src={videoUrl} 
-              className="w-full h-full border-none" 
-              allowFullScreen
-            ></iframe>
+          <div className="w-full h-full pt-16 md:pt-0 bg-black relative overflow-hidden">
+           <iframe 
+    src={videoUrl} 
+    /* JADU YAHAN HAI: 
+       top-[-60px] se upar ka text chup jayega.
+       h-[calc(100%+160px)] se height barh jayegi aur neechay ke buttons chup jayenge.
+    */
+    className="absolute top-[-60px] md:top-[-70px] left-0 w-full h-[calc(100%+160px)] md:h-[calc(100%+180px)] border-none" 
+    allowFullScreen
+  ></iframe>
           </div>
         ) : isTrailerPlaying && trailerKey ? (
           // 🔥 YOUTUBE TRAILER PLAYER
