@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Play, Star, Clock, Calendar, ArrowLeft } from 'lucide-react';
 
 const MovieDetail = () => {
   const { id } = useParams(); 
+  const navigate = useNavigate(); // 🔥 Naye page par bhejne ke liye
   const [movie, setMovie] = useState(null);
   
   // TMDB se aane wali extra details
   const [tmdbDetails, setTmdbDetails] = useState(null);
   const [cast, setCast] = useState([]);
-  const [trailerKey, setTrailerKey] = useState(null); // 🔥 Trailer ke liye nayi state
+  const [trailerKey, setTrailerKey] = useState(null);
   
   const [loading, setLoading] = useState(true);
   
-  // 🔥 Player Control States
+  // 🔥 Sirf Trailer ki state reh gayi hai
   const [isTrailerPlaying, setIsTrailerPlaying] = useState(false); 
-  const [isMoviePlaying, setIsMoviePlaying] = useState(false); 
 
   const TMDB_API_KEY = "944a4dcfa30d2998783dd7ba8ba5c664";
 
@@ -24,12 +24,10 @@ const MovieDetail = () => {
     const fetchMovieData = async () => {
       try {
         setLoading(true);
-        // 1. Apne MongoDB backend se movie laao
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/${id}`);
         const movieData = res.data;
         setMovie(movieData);
 
-        // 2. IMDB ID use karke TMDB se Background, Cast aur TRAILER mangwao
         if (movieData.imdbId) {
           const findUrl = `https://api.themoviedb.org/3/find/${movieData.imdbId}?external_source=imdb_id&api_key=${TMDB_API_KEY}`;
           const tmdbRes = await axios.get(findUrl);
@@ -37,15 +35,12 @@ const MovieDetail = () => {
           if (tmdbRes.data.movie_results && tmdbRes.data.movie_results.length > 0) {
             const tmdbId = tmdbRes.data.movie_results[0].id;
             
-            // TMDB se full details (Runtime waghera)
             const detailRes = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}`);
             setTmdbDetails(detailRes.data);
 
-            // TMDB se Cast (Actors)
             const creditsRes = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}/credits?api_key=${TMDB_API_KEY}`);
-            setCast(creditsRes.data.cast.slice(0, 8)); // Sirf shuru ke 8 actors lenge
+            setCast(creditsRes.data.cast.slice(0, 8)); 
 
-            // 🔥 TMDB se Videos (Trailer) nikalna
             const videoRes = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}/videos?api_key=${TMDB_API_KEY}`);
             const ytTrailer = videoRes.data.results.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
             if(ytTrailer) {
@@ -61,7 +56,7 @@ const MovieDetail = () => {
     };
 
     fetchMovieData();
-    window.scrollTo(0, 0); // Page load hotay hi top par scroll kar dega
+    window.scrollTo(0, 0); 
   }, [id]);
 
   if (loading) {
@@ -81,24 +76,11 @@ const MovieDetail = () => {
     );
   }
 
-  // Background Image Logic
   const backdropUrl = tmdbDetails?.backdrop_path 
     ? `https://image.tmdb.org/t/p/original${tmdbDetails.backdrop_path}` 
     : movie.posterUrl; 
-
-  // Player URLs
-  const videoUrl = movie.customUrl && movie.customUrl !== "" 
-    ? movie.customUrl 
-    : `https://vsembed.ru/embed/movie/${movie.imdbId}`;
     
   const youtubeTrailerUrl = `https://www.youtube.com/embed/${trailerKey}?autoplay=1`;
-
-  // Movie Play Karne Ka Function (Scroll top kar dega)
-  const handlePlayMovie = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setIsTrailerPlaying(false);
-    setIsMoviePlaying(true);
-  };
 
   return (
     <div className="min-h-screen bg-black text-white pb-12">
@@ -110,29 +92,9 @@ const MovieDetail = () => {
         </button>
       </div>
 
-      {/* === TOP HERO SECTION (Backdrop + Players) === */}
+      {/* === TOP HERO SECTION (Backdrop + Trailer) === */}
       <div className="relative w-full h-[40vh] md:h-[70vh] lg:h-[80vh]">
-        
-        {/* Agar isPlaying true hai to Player dikhao, warna Background Image */}
-        {isMoviePlaying ? (
-          // 🔥 FULL MOVIE PLAYER (The Final Aspect-Video Hack)
-          // JADU 1: h-full hata kar "aspect-video" laga diya hai. Ab dabba sirf movie jitna rahega.
-          <div className="w-full aspect-video pt-16 md:pt-0 bg-black relative overflow-hidden rounded-b-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
-            
-            {/* JADU 2: 
-                top-[-60px] / [-90px] ne usay upar khinch kar Header kaat diya.
-                h-[calc(100%+120px)] ne iframe ko lamba kar diya taake Footer dabbe se bahar gir jaye aur cut jaye.
-            */}
-            <div className="absolute top-[-60px] md:top-[-90px] left-0 right-0 h-[calc(100%+120px)] md:h-[calc(100%+180px)]">
-              <iframe 
-                src={videoUrl} 
-                className="w-full h-full border-none pointer-events-auto" 
-                allowFullScreen
-              ></iframe>
-            </div>
-
-          </div>
-        ) : isTrailerPlaying && trailerKey ? (
+        {isTrailerPlaying && trailerKey ? (
           // 🔥 YOUTUBE TRAILER PLAYER
           <div className="w-full h-full pt-16 md:pt-0 bg-black">
             <iframe 
@@ -150,10 +112,8 @@ const MovieDetail = () => {
               alt="Backdrop" 
               className="w-full h-full object-cover opacity-40 md:opacity-50"
             />
-            {/* Dark gradient for text visibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
             
-            {/* Center Play Trailer Button */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               {trailerKey ? (
                 <button 
@@ -174,11 +134,10 @@ const MovieDetail = () => {
       </div>
 
       {/* === MOVIE DETAILS SECTION === */}
-   <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${isMoviePlaying || isTrailerPlaying ? 'mt-4 md:mt-8' : '-mt-10 md:-mt-32'}`}>
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${isTrailerPlaying ? 'mt-4 md:mt-8' : '-mt-10 md:-mt-32'}`}>
         <div className="flex flex-col md:flex-row gap-8">
           
-          {/* Left Side: Poster (Chup jayega jab movie/trailer chal raha ho mobile par) */}
-          <div className={`w-1/3 md:w-1/4 lg:w-1/5 shrink-0 mx-auto md:mx-0 ${isMoviePlaying || isTrailerPlaying ? 'hidden md:block' : 'block'}`}>
+          <div className={`w-1/3 md:w-1/4 lg:w-1/5 shrink-0 mx-auto md:mx-0 ${isTrailerPlaying ? 'hidden md:block' : 'block'}`}>
             <img 
               src={movie.posterUrl} 
               alt={movie.title} 
@@ -186,13 +145,11 @@ const MovieDetail = () => {
             />
           </div>
 
-          {/* Right Side: Info */}
-<div className={`flex flex-col justify-end ${isMoviePlaying || isTrailerPlaying ? 'pt-0 md:pt-4' : 'pt-4 md:pt-20 lg:pt-32'}`}>
+          <div className={`flex flex-col justify-end ${isTrailerPlaying ? 'pt-0 md:pt-4' : 'pt-4 md:pt-20 lg:pt-32'}`}>
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-black mb-2 text-white drop-shadow-lg">
               {movie.title}
             </h1>
             
-            {/* Tags: Rating, Year, Runtime, Category, Language */}
             <div className="flex flex-wrap items-center gap-4 text-sm md:text-base text-gray-300 mb-4 font-medium">
               {movie.rating && (
                 <div className="flex items-center gap-1 text-yellow-500">
@@ -218,7 +175,6 @@ const MovieDetail = () => {
               </div>
             </div>
 
-            {/* Genres */}
             {movie.genres && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {movie.genres.split(',').map((genre, index) => (
@@ -229,10 +185,10 @@ const MovieDetail = () => {
               </div>
             )}
 
-            {/* 🔥 NEW: PLAY FULL MOVIE BUTTON (Asal Movie yahan se chalegi) */}
+            {/* 🔥 NEW: PLAY FULL MOVIE BUTTON (Navigates to new Player Page) */}
             <div className="mb-8">
               <button 
-                onClick={handlePlayMovie}
+                onClick={() => navigate(`/play/${movie._id}`)} // Route par bhej raha hai
                 className="flex items-center gap-3 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold text-sm md:text-base transition transform hover:-translate-y-1 shadow-[0_0_20px_rgba(220,38,38,0.5)]"
               >
                 <Play size={20} fill="white" />
@@ -240,12 +196,10 @@ const MovieDetail = () => {
               </button>
             </div>
 
-            {/* Description */}
             <p className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed max-w-4xl mb-8">
               {movie.description || tmdbDetails?.overview || "Is movie ki description abhi tak mojud nahi hai."}
             </p>
 
-            {/* === CAST SECTION (ACTORS) === */}
             {cast.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-xl font-bold mb-4 border-l-4 border-red-600 pl-3">Top Cast</h3>
