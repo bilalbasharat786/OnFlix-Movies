@@ -122,7 +122,7 @@ const MovieDetail = () => {
                 bottom-[-300px] se neechay ke buttons (Footer) 100% cut jayenge.
                 left/right-[-10px] taake koi fuzool scrollbar nazar na aaye.
             */}
-            <div className="absolute top-[-80px] md:top-[-90px] bottom-[-350px] md:bottom-[-450px] left-[-10px] right-[-10px]">
+            <div className="absolute top-[-80px] md:top-[-90px] bottom-[-450px] md:bottom-[-650px] left-[-10px] right-[-10px]">
               <iframe 
                 src={videoUrl} 
                 className="w-full h-full border-none pointer-events-auto" 
