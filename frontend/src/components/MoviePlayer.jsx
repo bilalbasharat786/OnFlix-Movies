@@ -64,9 +64,9 @@ const MoviePlayer = () => {
           src={videoUrl} 
           className="absolute border-none pointer-events-auto" 
           style={{
-            width: '140%',       // Video ko horizontally zoom karega
+            width: '135%',       // Video ko horizontally zoom karega
             height: '200%',      // Buttons ko frame se bahar rakhne ke liye space
-            top: '-10%',         // Header ko upar se 100% kaat dega
+            top: '-8%',         // Header ko upar se 100% kaat dega
                     
           }}
           allowFullScreen
