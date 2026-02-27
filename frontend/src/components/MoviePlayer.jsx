@@ -51,12 +51,14 @@ const MoviePlayer = () => {
         <ArrowLeft size={20} /> Back to Details
       </button>
 
-      {/* 🔥 THE ULTIMATE FULL SCREEN CROP HACK 🔥 */}
-      {/* w-full max-w-7xl ensures screen zyada lambi/chori na ho, aur aspect-video ratio lock karta hai */}
-      <div className="w-full max-w-7xl aspect-video bg-black relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+   <div className="w-full max-w-7xl aspect-video bg-black relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)]">
         
-        {/* top-[-60px] Header hide karega, bottom ki height usay lamba karke Footer kat degi */}
-        <div className="absolute top-[-60px] md:top-[-90px] left-0 right-0 h-[calc(100%+120px)] md:h-[calc(100%+180px)]">
+        {/* JADU YAHAN HAI: 
+            Koyeb ka footer meri umeed se zyada lamba (500px+) tha. 
+            Is liye ab humne height ko +600px (mobile) aur +800px (PC) kar diya hai! 
+            Ab wo hamesha ke liye overflow-hidden ki waja se dafan ho jayega.
+        */}
+        <div className="absolute top-[-80px] md:top-[-100px] left-0 right-0 w-full h-[calc(100%+600px)] md:h-[calc(100%+800px)]">
           <iframe 
             src={videoUrl} 
             className="w-full h-full border-none pointer-events-auto" 
