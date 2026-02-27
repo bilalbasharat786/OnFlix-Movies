@@ -115,14 +115,17 @@ const MovieDetail = () => {
         
         {isMoviePlaying ? (
           // 🔥 FULL MOVIE PLAYER (VidSrc)
-          <div className="w-full h-full pt-16 md:pt-0 bg-black relative overflow-hidden">
-           <iframe 
+          <div className="w-full aspect-video bg-black relative overflow-hidden">
+  
+  <iframe 
     src={videoUrl} 
     /* JADU YAHAN HAI: 
-       top-[-60px] se upar ka text chup jayega.
-       h-[calc(100%+160px)] se height barh jayegi aur neechay ke buttons chup jayenge.
+       top-[-10%] shifts the entire iframe UP significantly to hide the header.
+       h-[130%] makes the iframe much taller than the container, 
+       ensuring the footer elements (external players, links) fall far below the visible bottom edge.
+       left-[-5%] and w-[110%] might be needed for horizontal centering if needed.
     */
-    className="absolute top-[-60px] md:top-[-70px] left-0 w-full h-[calc(100%+160px)] md:h-[calc(100%+180px)] border-none" 
+    className="absolute top-[-10%] md:top-[-15%] left-0 w-full h-[130%] border-none shadow-[0_0_50px_rgba(0,0,0,0.8)]" 
     allowFullScreen
   ></iframe>
           </div>
