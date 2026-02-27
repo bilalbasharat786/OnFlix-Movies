@@ -113,16 +113,17 @@ const MovieDetail = () => {
       {/* === TOP HERO SECTION (Backdrop + Players) === */}
       <div className="relative w-full h-[40vh] md:h-[70vh] lg:h-[80vh]">
         
+        {/* Agar isPlaying true hai to Player dikhao, warna Background Image */}
         {isMoviePlaying ? (
-          // 🔥 FULL MOVIE PLAYER (The Ultimate Crop Hack)
-          <div className="w-full h-full pt-16 md:pt-0 bg-black relative overflow-hidden rounded-b-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+          // 🔥 FULL MOVIE PLAYER (The Final Aspect-Video Hack)
+          // JADU 1: h-full hata kar "aspect-video" laga diya hai. Ab dabba sirf movie jitna rahega.
+          <div className="w-full aspect-video pt-16 md:pt-0 bg-black relative overflow-hidden rounded-b-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
             
-            {/* JADU YAHAN HAI: 
-                top-[-90px] se upar ka text (Header) 100% hide ho jayega.
-                bottom-[-300px] se neechay ke buttons (Footer) 100% cut jayenge.
-                left/right-[-10px] taake koi fuzool scrollbar nazar na aaye.
+            {/* JADU 2: 
+                top-[-60px] / [-90px] ne usay upar khinch kar Header kaat diya.
+                h-[calc(100%+120px)] ne iframe ko lamba kar diya taake Footer dabbe se bahar gir jaye aur cut jaye.
             */}
-            <div className="absolute top-[-80px] md:top-[-90px] bottom-[-450px] md:bottom-[-650px] left-[-10px] right-[-10px]">
+            <div className="absolute top-[-60px] md:top-[-90px] left-0 right-0 h-[calc(100%+120px)] md:h-[calc(100%+180px)]">
               <iframe 
                 src={videoUrl} 
                 className="w-full h-full border-none pointer-events-auto" 
