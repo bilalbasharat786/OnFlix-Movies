@@ -51,20 +51,26 @@ const MoviePlayer = () => {
         <ArrowLeft size={20} /> Back to Details
       </button>
 
-   <div className="w-full max-w-7xl aspect-video bg-black relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+  {/* 🔥 THE 100% FINAL ZOOM HACK 🔥 */}
+      <div className="w-full aspect-video bg-black relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] flex items-center justify-center">
         
         {/* JADU YAHAN HAI: 
-            Koyeb ka footer meri umeed se zyada lamba (500px+) tha. 
-            Is liye ab humne height ko +600px (mobile) aur +800px (PC) kar diya hai! 
-            Ab wo hamesha ke liye overflow-hidden ki waja se dafan ho jayega.
+            Width 120% karne se video bari (zoom) ho jayegi.
+            top: -20% header ko frame se bahar phenk dega.
+            Kyunke video ab bari hai, neechay wale saare buttons automatically 
+            16:9 dabbe ki hudood (boundary) se bahar gir jayenge!
         */}
-        <div className="absolute top-[-80px] md:top-[-100px] left-0 right-0 w-full h-[calc(100%+600px)] md:h-[calc(100%+800px)]">
-          <iframe 
-            src={videoUrl} 
-            className="w-full h-full border-none pointer-events-auto" 
-            allowFullScreen
-          ></iframe>
-        </div>
+        <iframe 
+          src={videoUrl} 
+          className="absolute border-none pointer-events-auto" 
+          style={{
+            width: '120%',       // Video ko horizontally zoom karega
+            height: '150%',      // Buttons ko frame se bahar rakhne ke liye space
+            top: '-20%',         // Header ko upar se 100% kaat dega
+            left: '-10%'         // Video ko screen ke bilkul center mein layega (120-100 = 20 / 2)
+          }}
+          allowFullScreen
+        ></iframe>
 
       </div>
     </div>
