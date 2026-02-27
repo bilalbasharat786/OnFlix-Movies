@@ -114,20 +114,22 @@ const MovieDetail = () => {
       <div className="relative w-full h-[40vh] md:h-[70vh] lg:h-[80vh]">
         
         {isMoviePlaying ? (
-          // 🔥 FULL MOVIE PLAYER (VidSrc)
-          <div className="w-full aspect-video bg-black relative overflow-hidden">
-  
-  <iframe 
-    src={videoUrl} 
-    /* JADU YAHAN HAI: 
-       top-[-10%] shifts the entire iframe UP significantly to hide the header.
-       h-[130%] makes the iframe much taller than the container, 
-       ensuring the footer elements (external players, links) fall far below the visible bottom edge.
-       left-[-5%] and w-[110%] might be needed for horizontal centering if needed.
-    */
-    className="absolute top-[-10%] md:top-[-15%] left-0 w-full h-[130%] border-none shadow-[0_0_50px_rgba(0,0,0,0.8)]" 
-    allowFullScreen
-  ></iframe>
+          // 🔥 FULL MOVIE PLAYER (The Ultimate Crop Hack)
+          <div className="w-full h-full pt-16 md:pt-0 bg-black relative overflow-hidden rounded-b-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+            
+            {/* JADU YAHAN HAI: 
+                top-[-90px] se upar ka text (Header) 100% hide ho jayega.
+                bottom-[-300px] se neechay ke buttons (Footer) 100% cut jayenge.
+                left/right-[-10px] taake koi fuzool scrollbar nazar na aaye.
+            */}
+            <div className="absolute top-[-80px] md:top-[-90px] bottom-[-250px] md:bottom-[-300px] left-[-10px] right-[-10px]">
+              <iframe 
+                src={videoUrl} 
+                className="w-full h-full border-none pointer-events-auto" 
+                allowFullScreen
+              ></iframe>
+            </div>
+
           </div>
         ) : isTrailerPlaying && trailerKey ? (
           // 🔥 YOUTUBE TRAILER PLAYER
