@@ -10,9 +10,9 @@ const AddMovie = () => {
     customUrl: '',
     year: new Date().getFullYear(),
     language: 'Hindi',
-    category: 'Bollywood', // 🔥 Nayi State Default
-    genres: '', // 🔥 Nayi State (For Action, Comedy etc)
-    rating: ''  // 🔥 Nayi State (For 8.5 etc)
+    category: 'Bollywood',
+    genres: '',
+    rating: '' 
   });
 
   const [loading, setLoading] = useState(false);
@@ -21,6 +21,8 @@ const AddMovie = () => {
   // === 🔥 BULK IMPORT STATES ===
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkProgress, setBulkProgress] = useState("");
+  // 🔥 NAYA STATE: Auto-fetch ke liye selected year (Default 2024 rakha hai)
+  const [selectedBulkYear, setSelectedBulkYear] = useState(2024);
 
   const TMDB_API_KEY = "944a4dcfa30d2998783dd7ba8ba5c664";
 
@@ -43,7 +45,6 @@ const AddMovie = () => {
       if (res.data.movie_results && res.data.movie_results.length > 0) {
         const tmdbMovie = res.data.movie_results[0];
 
-        // 🔥 EXTRA JADU: Movie ki full detail (Genres/Rating) lane ke liye direct TMDB ID par call
         const detailUrl = `https://api.themoviedb.org/3/movie/${tmdbMovie.id}?api_key=${TMDB_API_KEY}`;
         const detailRes = await axios.get(detailUrl);
         const fullMovieData = detailRes.data;
@@ -51,13 +52,11 @@ const AddMovie = () => {
         const fullPosterUrl = tmdbMovie.poster_path
           ? `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}`
           : '';
-        const releaseYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : 2026;
+        const releaseYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : new Date().getFullYear();
 
-        // Genres aur Rating nikalna
         const fetchedGenres = fullMovieData.genres ? fullMovieData.genres.map(g => g.name).join(', ') : '';
         const fetchedRating = fullMovieData.vote_average ? fullMovieData.vote_average.toFixed(1) : '';
 
-        // 🔥 SMART AUTO-CATEGORY & LANGUAGE DETECTOR
         const ogLang = tmdbMovie.original_language;
         let autoCategory = 'Bollywood';
         let autoLanguage = 'Hindi';
@@ -77,8 +76,8 @@ const AddMovie = () => {
           year: releaseYear,
           language: autoLanguage, 
           category: autoCategory,
-          genres: fetchedGenres, // 🔥 Auto-Fill Genres
-          rating: fetchedRating  // 🔥 Auto-Fill Rating
+          genres: fetchedGenres, 
+          rating: fetchedRating  
         });
 
         toast.success(`Magic! ✨ ${autoCategory} Movie Data Auto-Filled!`);
@@ -93,53 +92,50 @@ const AddMovie = () => {
     }
   };
 
-  // === 🚀 VIP MAGIC FUNCTION: Auto-Fetch Top 50 Bollywood Movies ===
+  // === 🚀 VIP MAGIC FUNCTION: Auto-Fetch Top 50 Bollywood Movies (Dynamic Year) ===
   const autoFetchTop50 = async () => {
-    const confirmImport = window.confirm("Kya aap waqai 2019 ki Top 50 Bollywood movies automatically add karna chahte hain? Isme 1-2 minute lag sakte hain!");
+    // 🔥 Ab message mein selected year aayega
+    const confirmImport = window.confirm(`Kya aap waqai ${selectedBulkYear} ki Top 50 Bollywood movies automatically add karna chahte hain? Isme 1-2 minute lag sakte hain!`);
     if (!confirmImport) return;
 
     setBulkLoading(true);
     let addedCount = 0;
 
     try {
-      // 3 Pages loop chalega (Har page par 20 movies = max 60 movies total, isliye 50 ke qareeb banengi)
-      for (let page = 1; page <= 3; page++) {
+      for (let page = 1; page <= 5; page++) {
         setBulkProgress(`TMDB se Page ${page} ki movies dhoondh raha hoon...`);
         
-        // TMDB Discover API: Language=hi (Hindi), Year=2019
-        const discoverUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=hi&primary_release_year=2019&sort_by=popularity.desc&page=${page}`;
+        // 🔥 JADU: API call mein ab 'selectedBulkYear' use ho raha hai
+        const discoverUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=hi&primary_release_year=${selectedBulkYear}&sort_by=popularity.desc&page=${page}`;
         const res = await axios.get(discoverUrl);
         const moviesList = res.data.results;
 
         for (const tmdbMovie of moviesList) {
           try {
-            // IMDB ID laane ke liye dobara call
             const detailUrl = `https://api.themoviedb.org/3/movie/${tmdbMovie.id}?api_key=${TMDB_API_KEY}`;
             const detailRes = await axios.get(detailUrl);
-            const fullMovieData = detailRes.data; // 🔥 Full data pakra
+            const fullMovieData = detailRes.data; 
             const imdbId = fullMovieData.imdb_id;
 
-            // Agar IMDB ID nahi hai, chhor do
             if (!imdbId) continue;
 
             const fullPosterUrl = fullMovieData.poster_path ? `https://image.tmdb.org/t/p/w500${fullMovieData.poster_path}` : '';
-            const releaseYear = fullMovieData.release_date ? fullMovieData.release_date.split('-')[0] : 2019;
+            // 🔥 Naye movies ke form mein bhi wahi selected year save hoga agar tmdb date nahi deta
+            const releaseYear = fullMovieData.release_date ? fullMovieData.release_date.split('-')[0] : selectedBulkYear;
             
-            // 🔥 Genres aur Rating nikalna
             const fetchedGenres = fullMovieData.genres ? fullMovieData.genres.map(g => g.name).join(', ') : '';
             const fetchedRating = fullMovieData.vote_average ? fullMovieData.vote_average.toFixed(1) : '';
 
-            // Pura form data ready karo (Auto Category aur Language set ho rahi hai)
             const newMovieData = {
               title: fullMovieData.title || '',
               posterUrl: fullPosterUrl,
               imdbId: imdbId,
               customUrl: '',
               year: releaseYear,
-              language: 'Hindi', // Always Hindi for this bulk button
-              category: 'Bollywood', // Always Bollywood
-              genres: fetchedGenres, // 🔥 Auto Add Genres
-              rating: fetchedRating  // 🔥 Auto Add Rating
+              language: 'Hindi', 
+              category: 'Bollywood', 
+              genres: fetchedGenres, 
+              rating: fetchedRating  
             };
 
             await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, newMovieData);
@@ -151,7 +147,7 @@ const AddMovie = () => {
           }
         }
       }
-      toast.success(`🎉 Kamal ho gaya! Total ${addedCount} Bollywood Movies database mein save ho gayin!`);
+      toast.success(`🎉 Kamal ho gaya! ${selectedBulkYear} ki Total ${addedCount} Bollywood Movies database mein save ho gayin!`);
     } catch (error) {
       console.error("Bulk Fetching mein error aya:", error);
       toast.error("Auto Fetch ruk gaya, check console! ❌");
@@ -161,7 +157,6 @@ const AddMovie = () => {
     }
   };
 
-  // Normal Form Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -172,7 +167,7 @@ const AddMovie = () => {
       if (response.status === 201) {
         toast.success("Movie Added Successfully! 🚀");
         setMovie({
-          title: '', posterUrl: '', imdbId: '', customUrl: '', year: 2026, language: 'Hindi', category: 'Bollywood', genres: '', rating: '' // 🔥 Nayi fields clear ki
+          title: '', posterUrl: '', imdbId: '', customUrl: '', year: new Date().getFullYear(), language: 'Hindi', category: 'Bollywood', genres: '', rating: '' 
         });
       }
     } catch (error) {
@@ -183,24 +178,43 @@ const AddMovie = () => {
     }
   };
 
+  // Dropdown ke liye saalo ki list (2000 se current year tak)
+  const currentYear = new Date().getFullYear();
+  const yearsList = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i);
+
   return (
     <div className="max-w-2xl mx-auto bg-gray-800 p-8 rounded-lg shadow-lg border border-gray-700">
       <h2 className="text-2xl font-bold mb-6 text-white flex justify-between items-center">
         <span>Add New Movie</span>
       </h2>
 
-      {/* === 🔥 VIP AUTO FETCH BUTTON === */}
+      {/* === 🔥 VIP AUTO FETCH BUTTON (With Dropdown) === */}
       <div className="mb-8 p-4 bg-gray-900 border-2 border-dashed border-red-500 rounded-lg text-center">
         <h3 className="text-xl text-red-500 font-bold mb-2">🔥 Auto-Import Magic</h3>
-        <p className="text-sm text-gray-400 mb-4">Click karte hi 2019 ki top 50 Bollywood movies aapke database mein khud add ho jayengi!</p>
-        <button
-          type="button"
-          onClick={autoFetchTop50}
-          disabled={bulkLoading || loading}
-          className={`w-full py-3 font-bold text-white rounded shadow-lg transition-all ${bulkLoading ? 'bg-gray-600 cursor-not-allowed animate-pulse' : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700'}`}
-        >
-          {bulkLoading ? `Rukiye... ${bulkProgress}` : "🚀 Auto-Fetch Top 50 Bollywood Movies (2019)"}
-        </button>
+        <p className="text-sm text-gray-400 mb-4">Click karte hi selected saal ki top Bollywood movies aapke database mein khud add ho jayengi!</p>
+        
+        {/* 🔥 JADU: Naya Dropdown aur Button */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+          <select 
+            value={selectedBulkYear}
+            onChange={(e) => setSelectedBulkYear(e.target.value)}
+            disabled={bulkLoading || loading}
+            className="w-full sm:w-1/3 p-3 bg-gray-800 text-white rounded font-bold border border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          >
+            {yearsList.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            onClick={autoFetchTop50}
+            disabled={bulkLoading || loading}
+            className={`w-full sm:w-2/3 py-3 font-bold text-white rounded shadow-lg transition-all ${bulkLoading ? 'bg-gray-600 cursor-not-allowed animate-pulse' : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700'}`}
+          >
+            {bulkLoading ? `Rukiye... ${bulkProgress}` : `🚀 Auto-Fetch Top Movies (${selectedBulkYear})`}
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 mb-8">
@@ -210,7 +224,7 @@ const AddMovie = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-
+        {/* Yahan se neechay wala hissa aapke pichlay code ka same hai */}
         <div>
           <label className="block text-gray-400 mb-1">1. Paste IMDB ID First</label>
           <div className="flex gap-2">
@@ -262,7 +276,6 @@ const AddMovie = () => {
           </div>
         </div>
 
-        {/* 🔥 NAYI FIELDS: GENRES AUR RATING */}
         <div className="flex flex-wrap md:flex-nowrap gap-4">
           <div className="w-full md:w-2/3">
             <label className="block text-gray-400 mb-1">Genres (e.g. Action, Comedy)</label>
