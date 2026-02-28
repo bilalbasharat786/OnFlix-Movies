@@ -93,9 +93,9 @@ const AddMovie = () => {
   };
 
   // === 🚀 VIP MAGIC FUNCTION: Auto-Fetch Top 50 Bollywood Movies (Dynamic Year) ===
-  const autoFetchTop50 = async () => {
+  const autoFetchTop100 = async () => {
     // 🔥 Ab message mein selected year aayega
-    const confirmImport = window.confirm(`Kya aap waqai ${selectedBulkYear} ki Top 50 Bollywood movies automatically add karna chahte hain? Isme 1-2 minute lag sakte hain!`);
+    const confirmImport = window.confirm(`Kya aap waqai ${selectedBulkYear} ki Top 100 Bollywood movies automatically add karna chahte hain? Isme 1-2 minute lag sakte hain!`);
     if (!confirmImport) return;
 
     setBulkLoading(true);
@@ -208,7 +208,7 @@ const AddMovie = () => {
 
           <button
             type="button"
-            onClick={autoFetchTop50}
+            onClick={autoFetchTop100}
             disabled={bulkLoading || loading}
             className={`w-full sm:w-2/3 py-3 font-bold text-white rounded shadow-lg transition-all ${bulkLoading ? 'bg-gray-600 cursor-not-allowed animate-pulse' : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700'}`}
           >
