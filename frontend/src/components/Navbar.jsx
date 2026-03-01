@@ -92,7 +92,6 @@ const Navbar = () => {
             />
             <Search className="absolute right-3 top-2.5 text-gray-400" size={18} />
           </div>
-
           {/* Mobile Links */}
           <div className="flex flex-col space-y-3">
             <Link to="/hollywood" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-white font-medium block">

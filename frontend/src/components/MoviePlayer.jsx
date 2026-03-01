@@ -114,5 +114,4 @@ const MoviePlayer = () => {
   );
 };
 
-
 export default MoviePlayer;
