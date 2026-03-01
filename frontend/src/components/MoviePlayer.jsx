@@ -9,9 +9,19 @@ const MoviePlayer = () => {
   const [videoUrl, setVideoUrl] = useState('');
   
   // States for Loading Logic
-  const [isFetchingLink, setIsFetchingLink] = useState(true); // Database se link laane ka loader
-  const [iframeLoaded, setIframeLoaded] = useState(false); // Asal Movie load hone ka state
-  const [loadingProgress, setLoadingProgress] = useState(0); // 0 se 100% wala number
+  const [isFetchingLink, setIsFetchingLink] = useState(true);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // 🔥 NAYI STATE: Mobile Check (Screen size detect karne ke liye)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Screen resize listener: Agar user phone rotate kare ya screen choti bari kare
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -37,26 +47,20 @@ const MoviePlayer = () => {
   // 🔥 SMART LOADER LOGIC 🔥
   useEffect(() => {
     let interval;
-    // Agar link aagaya hai aur movie abhi tak load nahi hui
     if (videoUrl && !iframeLoaded) {
       interval = setInterval(() => {
         setLoadingProgress((prev) => {
-          // Loader ko 90% par rok do jab tak asli movie load na ho jaye
           if (prev >= 90) return 90;
-          // Har aadhay second mein randomly 5 se 15% barhao taake asli lagay
           return prev + Math.floor(Math.random() * 11) + 5; 
         });
       }, 500);
     } 
-    // Jaise hi iframe ne bataya ke wo load ho gaya hai, direct 100% kar do
     else if (iframeLoaded) {
       setLoadingProgress(100);
     }
-
     return () => clearInterval(interval);
   }, [videoUrl, iframeLoaded]);
 
-  // Pehla loader (Jab database se link aa raha ho)
   if (isFetchingLink) {
     return (
       <div className="min-h-screen bg-black flex justify-center items-center">
@@ -68,43 +72,43 @@ const MoviePlayer = () => {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center relative">
       
-      {/* 🔙 BACK BUTTON */}
+      {/* 🔙 BACK BUTTON (Mobile ke liye chota, Desktop ke liye bara) */}
       <button 
         onClick={() => navigate(-1)} 
-        className="absolute top-4 left-4 z-50 flex items-center gap-2 text-white bg-gray-900/80 hover:bg-red-600 px-4 py-2 rounded-lg font-bold transition-colors backdrop-blur-md"
+        className="absolute top-4 left-4 md:top-6 md:left-6 z-50 flex items-center gap-1 md:gap-2 text-white bg-gray-900/80 hover:bg-red-600 px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-bold text-xs md:text-base transition-colors backdrop-blur-md"
       >
-        <ArrowLeft size={20} /> Back to Details
+        <ArrowLeft size={isMobile ? 16 : 20} /> 
+        <span className="hidden sm:block">Back to Details</span>
+        <span className="sm:hidden">Back</span>
       </button>
 
       {/* 🔥 MAIN PLAYER CONTAINER 🔥 */}
       <div className="w-full aspect-video bg-black relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] flex items-center justify-center">
         
         {/* === JADUI PARDA (LOADING OVERLAY) === */}
-        {/* Yeh parda tab tak screen par rahega jab tak iframeLoaded true nahi hota */}
         {!iframeLoaded && (
           <div className="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center">
-            <Loader2 size={60} className="text-red-600 animate-spin mb-4" />
-            <div className="text-white font-bold text-2xl tracking-widest drop-shadow-lg">
+            <Loader2 size={isMobile ? 40 : 60} className="text-red-600 animate-spin mb-3 md:mb-4" />
+            <div className="text-white font-bold text-lg md:text-2xl tracking-widest drop-shadow-lg">
               LOADING <span className="text-red-500">{loadingProgress}%</span>
             </div>
-            <p className="text-gray-500 text-sm mt-2 animate-pulse">Establishing secure connection...</p>
+            <p className="text-gray-500 text-xs md:text-sm mt-2 animate-pulse">Establishing secure connection...</p>
           </div>
         )}
 
         {/* === ASAL MOVIE PLAYER (Backstage loading) === */}
         <iframe 
           src={videoUrl} 
-          // onLoad event fire hoga jab movie ka player 100% ready ho jayega
           onLoad={() => setIframeLoaded(true)} 
           className="absolute border-none pointer-events-auto" 
           style={{
-            // Tumhara CSS Hack bilkul wese hi kaam karega
-            width: '135%',       
-            height: '400%',      
-            top: '-15%',
-            // Agar load nahi hui toh background mein chupi rahegi (opacity 0), load hote hi samne aayegi
+            // 🔥 YAHAN HAI ASAL JADU! Mobile aur Desktop ke liye alag alag math hack
+            width: isMobile ? '170%' : '135%',       
+            height: isMobile ? '500%' : '400%',      
+            top: isMobile ? '-20%' : '-15%', 
+            left: isMobile ? '-35%' : '-17.5%', // Yeh horizontal center karne ke liye hai
             opacity: iframeLoaded ? 1 : 0, 
-            transition: 'opacity 0.5s ease-in-out' // Smooth fade in effect
+            transition: 'opacity 0.5s ease-in-out' 
           }}
           allowFullScreen
         ></iframe>
