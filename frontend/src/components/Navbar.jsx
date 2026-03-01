@@ -80,7 +80,6 @@ const Navbar = () => {
       {/* === MOBILE MENU (Sirf tab dikhega jab hamburger click hoga) === */}
       {isOpen && (
         <div className="md:hidden bg-gray-900 border-t border-gray-800 px-4 pt-2 pb-4 space-y-4 shadow-lg">
-          
           {/* Mobile Search Bar */}
           <div className="relative mt-2">
             <input 
