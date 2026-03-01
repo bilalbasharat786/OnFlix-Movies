@@ -9,10 +9,7 @@ const port = process.env.PORT || 5000;
 
 // === 🔥 MERI GHALTI KA FIX (CORS POLICY) ===
 // 'origin: "*"' lagane se ab Vercel ka koi bhi link block nahi hoga!
-app.use(cors({
-    origin: "*", 
-    credentials: true
-}));
+app.use(cors());
 
 app.use(express.json());
 
