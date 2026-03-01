@@ -12,20 +12,21 @@ const Hollywood = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // 🔥 YEAR FILTER STATE
+  // 🔥 FILTERS STATES
   const [selectedYear, setSelectedYear] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState(''); // 🔥 Genre ki nayi state
 
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
-  // 1. Jab Search ya Year badlay, to page 1 aur movies reset kardo
+  // 1. Jab Search, Year ya Genre badlay, to page 1 aur movies reset kardo
   useEffect(() => {
     setMovies([]);
     setPage(1);
     setHasMore(true);
-  }, [searchQuery, selectedYear]);
+  }, [searchQuery, selectedYear, selectedGenre]); // 🔥 selectedGenre yahan add kar diya
 
-  // 2. Backend se movies mangwana (Sirf Hollywood ki Category + Year Filter)
+  // 2. Backend se movies mangwana (Hollywood + Search + Year + Genre)
   useEffect(() => {
     const controller = new AbortController(); 
 
@@ -44,8 +45,14 @@ const Hollywood = () => {
           url = `${import.meta.env.VITE_API_URL}/api/movies/all?page=${page}&limit=20&category=Hollywood`;
         }
 
+        // 🔥 AGAR YEAR SELECT HUA HAI
         if (selectedYear) {
             url += `&year=${selectedYear}`;
+        }
+
+        // 🔥 AGAR GENRE SELECT HUA HAI
+        if (selectedGenre) {
+            url += `&genre=${selectedGenre}`;
         }
 
         const res = await axios.get(url, { signal: controller.signal });
@@ -77,7 +84,7 @@ const Hollywood = () => {
       clearTimeout(delayTimer); 
       controller.abort(); 
     };
-  }, [page, searchQuery, selectedYear]);
+  }, [page, searchQuery, selectedYear, selectedGenre]); // 🔥 Dependencies update kar di
 
   // 3. Infinite Scroll Listener
   useEffect(() => {
@@ -93,29 +100,52 @@ const Hollywood = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loading, loadingMore]);
 
+  // Filters Lists
   const yearsList = Array.from({ length: 27 }, (_, i) => 2026 - i);
+  const genresList = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "History", "Horror", "Music", "Mystery", "Romance", "Sci-Fi", "Thriller", "War"];
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-black">
       
-      {/* HEADER AUR YEAR DROPDOWN */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      {/* HEADER AUR FILTERS (Mobile & Tablet Responsive) */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <h1 className="text-2xl md:text-4xl font-bold text-blue-500">
           {searchQuery ? `Search Results for "${searchQuery}" in Hollywood` : "Hollywood (Hindi Dubbed & English)"}
         </h1>
 
-        <div className="flex items-center gap-2 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700 shadow-lg">
-            <label className="text-gray-400 font-semibold text-sm whitespace-nowrap">Filter Year:</label>
-            <select 
-                value={selectedYear} 
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="bg-black text-blue-400 font-bold border-none focus:outline-none focus:ring-0 cursor-pointer text-sm"
-            >
-                <option value="">All Years</option>
-                {yearsList.map(year => (
-                    <option key={year} value={year}>{year}</option>
-                ))}
-            </select>
+        {/* 🔥 FILTERS CONTAINER (Flex Wrap for Mobile) */}
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            
+            {/* Genre Dropdown */}
+            <div className="flex items-center gap-2 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700 shadow-lg flex-1 md:flex-none justify-between md:justify-start">
+                <label className="text-gray-400 font-semibold text-sm whitespace-nowrap">Genre:</label>
+                <select 
+                    value={selectedGenre} 
+                    onChange={(e) => setSelectedGenre(e.target.value)}
+                    className="bg-black text-blue-400 font-bold border-none focus:outline-none focus:ring-0 cursor-pointer text-sm w-full md:w-auto text-right md:text-left"
+                >
+                    <option value="">All</option>
+                    {genresList.map(genre => (
+                        <option key={genre} value={genre}>{genre}</option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Year Dropdown */}
+            <div className="flex items-center gap-2 bg-gray-900 px-3 py-2 rounded-lg border border-gray-700 shadow-lg flex-1 md:flex-none justify-between md:justify-start">
+                <label className="text-gray-400 font-semibold text-sm whitespace-nowrap">Year:</label>
+                <select 
+                    value={selectedYear} 
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="bg-black text-blue-400 font-bold border-none focus:outline-none focus:ring-0 cursor-pointer text-sm w-full md:w-auto text-right md:text-left"
+                >
+                    <option value="">All</option>
+                    {yearsList.map(year => (
+                        <option key={year} value={year}>{year}</option>
+                    ))}
+                </select>
+            </div>
+
         </div>
       </div>
 
@@ -130,7 +160,7 @@ const Hollywood = () => {
         ) : movies.length === 0 ? (
           <div className="col-span-full text-center text-gray-400 mt-10">
             <p className="text-xl">
-                {selectedYear ? `Koi movie nahi mili ${selectedYear} saal ki 😢` : 'Koi Hollywood movie nahi mili 😢'}
+                {selectedYear || selectedGenre ? 'Koi aesi Hollywood movie nahi mili 😢' : 'Koi Hollywood movie nahi mili 😢'}
             </p>
           </div>
         ) : (
