@@ -13,10 +13,10 @@ const MoviePlayer = () => {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // 🔥 NAYI STATE: Mobile Check (Screen size detect karne ke liye)
+  // 🔥 NAYI STATE: Mobile Check
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Screen resize listener: Agar user phone rotate kare ya screen choti bari kare
+  // Screen resize listener
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -72,7 +72,7 @@ const MoviePlayer = () => {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center relative">
       
-      {/* 🔙 BACK BUTTON (Mobile ke liye chota, Desktop ke liye bara) */}
+      {/* 🔙 BACK BUTTON */}
       <button 
         onClick={() => navigate(-1)} 
         className="absolute top-4 left-4 md:top-6 md:left-6 z-50 flex items-center gap-1 md:gap-2 text-white bg-gray-900/80 hover:bg-red-600 px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-bold text-xs md:text-base transition-colors backdrop-blur-md"
@@ -102,11 +102,11 @@ const MoviePlayer = () => {
           onLoad={() => setIframeLoaded(true)} 
           className="absolute border-none pointer-events-auto" 
           style={{
-            // 🔥 YAHAN HAI ASAL JADU! Mobile aur Desktop ke liye alag alag math hack
-            width: isMobile ? '170%' : '135%',       
-            height: isMobile ? '500%' : '400%',      
-            top: isMobile ? '-20%' : '-15%', 
-            left: isMobile ? '-35%' : '-17.5%', // Yeh horizontal center karne ke liye hai
+            // 🔥 FINAL BULLETPROOF MATH (No more cut videos!)
+            width: isMobile ? '140%' : '135%',       
+            height: '400%',      
+            top: '-15%', // Dono mein same crop taake video ka top hissa na katay
+            left: isMobile ? '-20%' : '-17.5%', // Center karne ka exact formula
             opacity: iframeLoaded ? 1 : 0, 
             transition: 'opacity 0.5s ease-in-out' 
           }}
