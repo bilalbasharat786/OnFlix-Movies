@@ -289,7 +289,7 @@ export default function ManageMovies({ categoryTitle }) {
       {loading ? (
         <div className="text-center text-red-500 text-xl font-bold py-10 animate-pulse">Movies load ho rahi hain...</div>
       ) : searchedMovies.length === 0 ? (
-        <div className="text-center text-gray-400 text-xl font-semibold py-10 border border-gray-700 rounded-lg">Koi movie nahi mili.</div>
+        <div className="text-center text-gray-400 text-xl font-semibold py-10 border border-gray-700 rounded-lg">MOVIE NOT FOUND</div>
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">

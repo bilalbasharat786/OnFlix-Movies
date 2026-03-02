@@ -160,7 +160,7 @@ const Hollywood = () => {
         ) : movies.length === 0 ? (
           <div className="col-span-full text-center text-gray-400 mt-10">
             <p className="text-xl">
-                {selectedYear || selectedGenre ? 'Koi aesi Hollywood movie nahi mili 😢' : 'Koi Hollywood movie nahi mili 😢'}
+                {selectedYear || selectedGenre ? 'NOT FOUND' : 'NOT FOUND'}
             </p>
           </div>
         ) : (
@@ -219,7 +219,7 @@ const Hollywood = () => {
 
       {!hasMore && movies.length > 0 && !loading && (
         <div className="text-center text-gray-600 py-8 font-semibold">
-          🎉 Saari Hollywood movies load ho chuki hain!
+          ALL HOLLYWOOD MOVIES LOADED
         </div>
       )}
     </div>

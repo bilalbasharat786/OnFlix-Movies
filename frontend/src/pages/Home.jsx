@@ -172,7 +172,7 @@ const Home = () => {
         ) : movies.length === 0 ? (
           <div className="col-span-full text-center text-gray-400 mt-10">
             <p className="text-xl">
-              Koi movie nahi mili 😢
+              MOVIES NOT FOUND
             </p>
           </div>
         ) : (

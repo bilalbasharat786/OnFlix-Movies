@@ -218,7 +218,7 @@ const Bollywood = () => {
 
       {!hasMore && movies.length > 0 && !loading && (
         <div className="text-center text-gray-600 py-8 font-semibold">
-          🎉 Saari Bollywood movies load ho chuki hain!
+          ALL BOLLYWOOD MOVIES LOADED
         </div>
       )}
     </div>
