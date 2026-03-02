@@ -6,6 +6,7 @@ import Hollywood from './pages/Hollywood';
 import Bollywood from './pages/Bollywood';
 import MovieDetail from './pages/MovieDetail';
 import MoviePlayer from './components/MoviePlayer';
+import Hero from './components/Hero';
 // Note: Ab humein Player.jsx ki zaroorat nahi kyunke MovieDetail mein hi player laga hua hai!
 
 const App = () => {
@@ -15,6 +16,7 @@ const App = () => {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/hero" element={<Home />} />
           <Route path="/hollywood" element={<Hollywood />} />
           <Route path="/bollywood" element={<Bollywood />} />
           <Route path="/watch/:id" element={<MovieDetail />} />
