@@ -10,9 +10,10 @@ console.log("Routes Loaded...");
 router.post('/add', addMovie);
 router.get('/all', getMovies);
 router.get('/search', searchMovies);
+router.get('/hero', getHeroMovies);
 router.get('/:id', getMovieById);
 router.put('/:id', updateMovie);
 router.delete('/:id', deleteMovie);
-router.get('/hero', getHeroMovies);
+
 
 export default router;
