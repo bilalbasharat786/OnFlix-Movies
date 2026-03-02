@@ -210,7 +210,7 @@ export default function ManageMovies({ categoryTitle }) {
                     className="w-5 h-5 accent-red-600 cursor-pointer"
                 />
                 <label htmlFor="isHeroEdit" className="text-white font-bold cursor-pointer select-none">
-                    🔥 Is movie ko Homepage Hero Slider mein dikhayein?
+                    Hero Slider
                 </label>
             </div>
 
