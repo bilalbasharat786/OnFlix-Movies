@@ -12,7 +12,8 @@ const AddMovie = () => {
     language: 'Hindi',
     category: 'Bollywood',
     genres: '',
-    rating: '' 
+    rating: '' ,
+    isHero: false
   });
 
   const [loading, setLoading] = useState(false);
@@ -26,10 +27,10 @@ const AddMovie = () => {
 
   const TMDB_API_KEY = "944a4dcfa30d2998783dd7ba8ba5c664";
 
-  const handleChange = (e) => {
-    setMovie({ ...movie, [e.target.name]: e.target.value });
+ const handleChange = (e) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setMovie({ ...movie, [e.target.name]: value });
   };
-
   // === SMART MAGIC FUNCTION (Single Movie Manual Fetch) ===
   const fetchTMDBDetails = async () => {
     if (!movie.imdbId) {
@@ -167,7 +168,7 @@ const AddMovie = () => {
       if (response.status === 201) {
         toast.success("Movie Added Successfully! 🚀");
         setMovie({
-          title: '', posterUrl: '', imdbId: '', customUrl: '', year: new Date().getFullYear(), language: 'Hindi', category: 'Bollywood', genres: '', rating: '' 
+          title: '', posterUrl: '', imdbId: '', customUrl: '', year: new Date().getFullYear(), language: 'Hindi', category: 'Bollywood', genres: '', rating: '', isHero: false 
         });
       }
     } catch (error) {
@@ -257,7 +258,7 @@ const AddMovie = () => {
           </div>
           
           <div className="w-full md:w-1/3">
-            <label className="block text-gray-400 mb-1 font-bold text-red-400">Category</label>
+            <label className="block mb-1 font-bold text-red-400">Category</label>
             <select name="category" value={movie.category} onChange={handleChange} className="w-full p-2 bg-gray-800 text-white rounded border border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500">
               <option>Bollywood</option>
               <option>Hollywood</option>
@@ -286,7 +287,20 @@ const AddMovie = () => {
             <input type="text" name="rating" value={movie.rating} onChange={handleChange} placeholder="8.5" className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600" />
           </div>
         </div>
-
+{/* 🔥 NAYA: Hero Slider Checkbox */}
+        <div className="p-4 bg-gray-900 border border-red-500 rounded flex items-center gap-3">
+          <input 
+            type="checkbox" 
+            name="isHero" 
+            id="isHero" 
+            checked={movie.isHero} 
+            onChange={handleChange} 
+            className="w-5 h-5 accent-red-600 cursor-pointer" 
+          />
+          <label htmlFor="isHero" className="text-white font-bold cursor-pointer select-none">
+            Hero Section
+          </label>
+        </div>
         <button type="submit" disabled={loading || bulkLoading} className={`w-full py-3 mt-4 font-bold text-white rounded transition ${loading ? 'bg-gray-600' : 'bg-red-600 hover:bg-red-700'}`}>
           {loading ? "Saving to Database..." : "Add Movie to Website"}
         </button>

@@ -33,6 +33,10 @@ const movieSchema = new mongoose.Schema(
     },
     genres: { type: String, default: "" },
     rating: { type: String, default: "" },
+    isHero: { 
+      type: Boolean, 
+      default: false 
+    },
   },
   { timestamps: true },
 );

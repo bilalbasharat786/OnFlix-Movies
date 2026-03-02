@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Play } from 'lucide-react';
+import Hero from '../components/Hero';
 
 const Home = () => {
   const [movies, setMovies] = useState([]);
@@ -106,7 +107,15 @@ const Home = () => {
   const genresList = ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "History", "Horror", "Music", "Mystery", "Romance", "Sci-Fi", "Thriller", "War"];
 
   return (
-    <div className="p-4 md:p-8">
+     <div className="min-h-screen bg-black">
+      
+      {/* 🔥 JADU: Hero Slider Sirf tab dikhega jab koi filter ya search active na ho */}
+      {!searchQuery && !selectedYear && !selectedGenre && (
+        <Hero />
+      )}
+
+      {/* Is div mein p-4 md:p-8 wese hi rehne do */}
+      <div className="p-4 md:p-8">
       
       {/* HEADER AUR FILTERS (Mobile & Tablet Responsive) */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -215,9 +224,10 @@ const Home = () => {
 
       {!hasMore && movies.length > 0 && !loading && (
         <div className="text-center text-gray-600 py-8 font-semibold">
-          🎉 Aapne saari movies dekh li hain!
+          ALL MOVIES UPLOADED
         </div>
       )}
+    </div>
     </div>
   );
 };

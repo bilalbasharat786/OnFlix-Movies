@@ -101,11 +101,11 @@ export const getMovieById = async (req, res) => {
 // 5. Update Movie Details (WITH GENRES & RATING)
 export const updateMovie = async (req, res) => {
     try {
-        const { title, posterUrl, imdbId, customUrl, year, language, category, genres, rating } = req.body;
+        const { title, posterUrl, imdbId, customUrl, year, language, category, genres, rating, isHero } = req.body;
         
         const updatedMovie = await Movie.findByIdAndUpdate(
             req.params.id,
-            { title, posterUrl, imdbId, customUrl, year, language, category, genres, rating },
+            { title, posterUrl, imdbId, customUrl, year, language, category, genres, rating, isHero },
             { new: true } 
         );
 
@@ -133,5 +133,16 @@ export const deleteMovie = async (req, res) => {
     } catch (error) {
         console.error("Delete error:", error);
         res.status(500).json({ error: "Movie delete karne mein masla aagaya" });
+    }
+};
+// 7. Get Hero Movies (Sirf wo movies jin par admin ne tick lagaya hai)
+export const getHeroMovies = async (req, res) => {
+    try {
+        // Sirf 5 latest hero movies layega taake slider heavy na ho
+        const heroMovies = await Movie.find({ isHero: true }).sort({ createdAt: -1 }).limit(5);
+        res.status(200).json(heroMovies);
+    } catch (error) {
+        console.error("Hero movies fetch error:", error);
+        res.status(500).json(error);
     }
 };
