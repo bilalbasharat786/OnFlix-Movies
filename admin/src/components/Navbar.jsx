@@ -5,7 +5,6 @@ import { Menu, X, PlusCircle, Film } from 'lucide-react';
 export default function AdminNavbar() {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Menu band karne ke liye function
   const closeMenu = () => setIsOpen(false);
 
   return (
