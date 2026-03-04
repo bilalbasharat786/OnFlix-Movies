@@ -22,6 +22,11 @@ const App = () => {
         <div className="container mx-auto p-4">
           {/* Yahan se tumhare pages badlenge */}
           <Routes>
+            {/* 1. KHULA RASTA (Sirf Login Page) */}
+          <Route path="/login" element={<Login />} />
+
+          {/* 2. GUARD WALA RASTA (Protected Routes) */}
+          <Route element={<ProtectedRoute />}></Route>
             {/* Jab koi seedha website kholey to usko Add Movie par bhej do */}
             <Route path="/" element={<Navigate to="/admin/add-movie" />} />
             <Route path="/admin" element={<Navigate to="/admin/add-movie" />} />

@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, PlusCircle, Film } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function AdminNavbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenu = () => setIsOpen(false);
+const navigate = useNavigate();
 
+const handleLogout = () => {
+  localStorage.removeItem('onflix_admin_auth'); // Pass delete kar do
+  navigate('/login'); // Wapis login par bhej do
+};
   return (
     <nav className="bg-gray-900 text-white p-4 shadow-md border-b border-gray-800 sticky top-0 z-[100]">
       <div className="container mx-auto flex justify-between items-center">
@@ -77,6 +84,9 @@ export default function AdminNavbar() {
           >
             <Film size={20} className="text-red-600" /> Manage Hollywood
           </Link>
+          <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-md font-bold text-sm ml-4">
+            Logout
+            </button>
         </div>
       </div>
     </nav>
