@@ -11,19 +11,17 @@ import { useEffect } from 'react';
 // Note: Ab humein Player.jsx ki zaroorat nahi kyunke MovieDetail mein hi player laga hua hai!
 
 const App = () => {
-  useEffect(() => {
-    // 1. Check karo ke kya user isi session mein verify hua hai?
-    const isVerified = sessionStorage.getItem("onflix_verified");
+useEffect(() => {
+    // 1. Check karo ke user kahan se aaya hai
+    const referrer = document.referrer;
     
-    // 2. Admin Protection: Check karo ke kya user Admin URL par hai?
-    // Agar URL mein "/admin" aata hai, toh check mat karo
-    const isAdminPath = window.location.pathname.startsWith('/admin');
-
+    // 2. Aapka Gateway URL (Jahan se user ko aana chahiye)
     const gatewayURL = "https://redirect-onflix-movies.vercel.app/";
 
-    // 3. Agar Admin nahi hai AUR verify bhi nahi hua, toh gateway par bhejo
-    if (!isAdminPath && isVerified !== "true") {
-      console.log("⚠️ Verification Required. Redirecting...");
+    // 3. Agar user direct aaya hai (Referrer khali hai) 
+    // YA user kisi aur site se aaya hai (Gateway se nahi), toh usay wapis bhejo
+    if (!referrer || !referrer.startsWith(gatewayURL)) {
+      console.log("⚠️ Security Alert: Direct access blocked. Redirecting to Gateway...");
       window.location.href = gatewayURL;
     }
   }, []);
