@@ -3,6 +3,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'; 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ProtectedRoute from "./components/ProtectedRoute";
+import { Login } from './pages/Login';
 
 // Components aur Pages Import kiye hain
 import AdminNavbar from './components/Navbar'; // Tumhare components folder se
