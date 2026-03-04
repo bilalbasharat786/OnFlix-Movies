@@ -7,6 +7,7 @@ import Bollywood from './pages/Bollywood';
 import MovieDetail from './pages/MovieDetail';
 import MoviePlayer from './components/MoviePlayer';
 import Hero from './components/Hero';
+import { useEffect } from 'react';
 // Note: Ab humein Player.jsx ki zaroorat nahi kyunke MovieDetail mein hi player laga hua hai!
 
 const App = () => {
