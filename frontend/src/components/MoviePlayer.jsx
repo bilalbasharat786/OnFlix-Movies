@@ -97,21 +97,21 @@ const MoviePlayer = () => {
         )}
 
         {/* === ASAL MOVIE PLAYER (Backstage loading) === */}
-         <iframe 
-          src={videoUrl} 
-          onLoad={() => setIframeLoaded(true)} 
-          className="absolute border-none pointer-events-auto" 
-          style={{
-            // 🔥 YAHAN CHANGING KI HAI: Mobile par 100% takay movie cut na ho!
-            width: isMobile ? '100%' : '135%',       
-            height: isMobile ? '100%' : '135%',      
-            top: isMobile ? '0%' : '-15%', 
-            left: isMobile ? '0%' : '-17.5%', 
-            opacity: iframeLoaded ? 1 : 0, 
-            transition: 'opacity 0.5s ease-in-out' 
-          }}
-          allowFullScreen
-        ></iframe>
+    <iframe
+    src={videoUrl}
+    onLoad={() => setIframeLoaded(true)}
+    allowFullScreen
+    className={`absolute border-none transition-opacity duration-500 
+    ${iframeLoaded ? "opacity-100" : "opacity-0"}
+        top-1/2 left-1/2
+      -translate-x-1/2 -translate-y-1/2
+      w-[100vw]
+      h-[56.25vw]
+      min-h-[100vh]
+      min-w-[177.77vh]
+      scale-[1.3] md:scale-[1.2]
+  `}
+    ></iframe>
 
       </div>
     </div>
