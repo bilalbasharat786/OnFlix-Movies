@@ -97,16 +97,16 @@ const MoviePlayer = () => {
         )}
 
         {/* === ASAL MOVIE PLAYER (Backstage loading) === */}
-        <iframe 
+         <iframe 
           src={videoUrl} 
           onLoad={() => setIframeLoaded(true)} 
           className="absolute border-none pointer-events-auto" 
           style={{
-            // 🔥 FINAL BULLETPROOF MATH (No more cut videos!)
-            width: isMobile ? '140%' : '135%',       
-            height: '400%',      
-            top: '-15%', // Dono mein same crop taake video ka top hissa na katay
-            left: isMobile ? '-20%' : '-17.5%', // Center karne ka exact formula
+            // 🔥 YAHAN CHANGING KI HAI: Mobile par 100% takay movie cut na ho!
+            width: isMobile ? '100%' : '135%',       
+            height: isMobile ? '100%' : '135%',      
+            top: isMobile ? '0%' : '-15%', 
+            left: isMobile ? '0%' : '-17.5%', 
             opacity: iframeLoaded ? 1 : 0, 
             transition: 'opacity 0.5s ease-in-out' 
           }}
