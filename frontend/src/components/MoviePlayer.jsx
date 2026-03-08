@@ -112,7 +112,7 @@ const MoviePlayer = () => {
         <div className="absolute top-0 left-0 w-full h-[10vh] bg-black z-[80] pointer-events-auto"></div>
         
         {/* 2. Right Sidebar Cover: Width 25vw se 22vw kardi taake fullscreen icon samne aa jaye */}
-        <div className="hidden md:block absolute top-0 right-0 w-[22vw] h-full bg-black z-[80] pointer-events-auto"></div>
+        <div className="hidden md:block absolute top-0 right-0 w-[24vw] h-full bg-black z-[80] pointer-events-auto"></div>
         
         {/* 3. Bottom Text Cover: Height 18vh set ki hai */}
         <div className="absolute bottom-0 left-0 w-full h-[15vh] md:h-[18vh] bg-black z-[80] pointer-events-auto"></div>
