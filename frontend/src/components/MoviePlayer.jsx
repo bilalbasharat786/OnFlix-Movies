@@ -13,10 +13,8 @@ const MoviePlayer = () => {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // 🔥 NAYI STATE: Mobile Check
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Screen resize listener
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -29,7 +27,9 @@ const MoviePlayer = () => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies/${id}`);
         const movie = res.data;
         
-        const url = movie.customUrl && movie.customUrl !== "" 
+        // 💡 PRO TIP: Agar tumhara link '/watch/' ki jagah '/embed/' support karta hai, 
+        // toh URL mein replace kar dena, wahan automatically buttons nahi hotay.
+        let url = movie.customUrl && movie.customUrl !== "" 
           ? movie.customUrl 
           : `https://vsembed.ru/embed/movie/${movie.imdbId}`;
           
@@ -44,7 +44,6 @@ const MoviePlayer = () => {
     fetchMovie();
   }, [id]);
 
-  // 🔥 SMART LOADER LOGIC 🔥
   useEffect(() => {
     let interval;
     if (videoUrl && !iframeLoaded) {
@@ -70,50 +69,46 @@ const MoviePlayer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center relative">
+    // Pura page cover kar liya aur overflow hidden kar diya taake scroll na ho
+    <div className="fixed inset-0 bg-black flex items-center justify-center overflow-hidden z-50">
       
-      {/* 🔙 BACK BUTTON */}
+      {/* 🔙 BACK BUTTON (Z-index high rakha hai taake hamesha oopar rahay) */}
       <button 
         onClick={() => navigate(-1)} 
-        className="absolute top-4 left-4 md:top-6 md:left-6 z-50 flex items-center gap-1 md:gap-2 text-white bg-gray-900/80 hover:bg-red-600 px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-bold text-xs md:text-base transition-colors backdrop-blur-md"
+        className="absolute top-4 left-4 md:top-6 md:left-6 z-[60] flex items-center gap-1 md:gap-2 text-white bg-gray-900/80 hover:bg-red-600 px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-bold text-xs md:text-base transition-colors backdrop-blur-md shadow-lg"
       >
         <ArrowLeft size={isMobile ? 16 : 20} /> 
         <span className="hidden sm:block">Back to Details</span>
         <span className="sm:hidden">Back</span>
       </button>
 
-      {/* 🔥 MAIN PLAYER CONTAINER 🔥 */}
-      <div className="w-full aspect-video bg-black relative overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] flex items-center justify-center">
-        
-        {/* === JADUI PARDA (LOADING OVERLAY) === */}
-        {!iframeLoaded && (
-          <div className="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center">
-            <Loader2 size={isMobile ? 40 : 60} className="text-red-600 animate-spin mb-3 md:mb-4" />
-            <div className="text-white font-bold text-lg md:text-2xl tracking-widest drop-shadow-lg">
-              LOADING <span className="text-red-500">{loadingProgress}%</span>
-            </div>
-            <p className="text-gray-500 text-xs md:text-sm mt-2 animate-pulse">Establishing secure connection...</p>
+      {/* === JADUI PARDA (LOADING OVERLAY) === */}
+      {!iframeLoaded && (
+        <div className="absolute inset-0 z-[55] bg-black flex flex-col items-center justify-center">
+          <Loader2 size={isMobile ? 40 : 60} className="text-red-600 animate-spin mb-3 md:mb-4" />
+          <div className="text-white font-bold text-lg md:text-2xl tracking-widest drop-shadow-lg">
+            LOADING <span className="text-red-500">{loadingProgress}%</span>
           </div>
-        )}
+          <p className="text-gray-500 text-xs md:text-sm mt-2 animate-pulse">Establishing secure connection...</p>
+        </div>
+      )}
 
-        {/* === ASAL MOVIE PLAYER (Backstage loading) === */}
-    <iframe
-    src={videoUrl}
-    onLoad={() => setIframeLoaded(true)}
-    allowFullScreen
-    className={`absolute border-none transition-opacity duration-500 
-    ${iframeLoaded ? "opacity-100" : "opacity-0"}
-        top-1/2 left-1/2
-      -translate-x-1/2 -translate-y-1/2
-      w-[100vw]
-      h-[56.25vw]
-      min-h-[100vh]
-      min-w-[177.77vh]
-      scale-[1.3] md:scale-[1.2]
-  `}
-    ></iframe>
-
+      {/* 🔥 THE MAGIC IFRAME CROP 🔥 */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        <iframe
+          src={videoUrl}
+          onLoad={() => setIframeLoaded(true)}
+          allowFullScreen
+          className={`absolute border-none transition-opacity duration-1000 
+          ${iframeLoaded ? "opacity-100" : "opacity-0"}
+          /* Desktop: Zoom in (scale-125), thora oopar (-translate-y-12), aur left (-translate-x-12) shift kiya taake right sidebar aur top header chup jaye */
+          md:w-[130vw] md:h-[130vh] md:scale-125 md:-translate-y-[10%] md:-translate-x-[15%]
+          /* Mobile: Screen pe fit karne ke liye zoom in aur alignment */
+          w-[150vw] h-[150vh] scale-150 -translate-y-[15%] -translate-x-0
+          `}
+        ></iframe>
       </div>
+      
     </div>
   );
 };
