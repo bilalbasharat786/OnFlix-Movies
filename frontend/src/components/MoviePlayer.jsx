@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react'; // Rotate icon import kiya
 
 const MoviePlayer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [videoUrl, setVideoUrl] = useState('');
   
-  // States for Loading Logic
+  // States for Loading & ID Logic
   const [isFetchingLink, setIsFetchingLink] = useState(true);
   const [iframeLoaded, setIframeLoaded] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  // 🔥 NAYI STATE: Check karne ke liye ke phone rotate hai ya nahi
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
+  // Screen resize & orientation listener
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      // 🔥 Rotate detect karne ka logic
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -42,22 +48,6 @@ const MoviePlayer = () => {
     fetchMovie();
   }, [id]);
 
-  useEffect(() => {
-    let interval;
-    if (videoUrl && !iframeLoaded) {
-      interval = setInterval(() => {
-        setLoadingProgress((prev) => {
-          if (prev >= 90) return 90;
-          return prev + Math.floor(Math.random() * 11) + 5; 
-        });
-      }, 500);
-    } 
-    else if (iframeLoaded) {
-      setLoadingProgress(100);
-    }
-    return () => clearInterval(interval);
-  }, [videoUrl, iframeLoaded]);
-
   if (isFetchingLink) {
     return (
       <div className="min-h-screen bg-black flex justify-center items-center">
@@ -67,55 +57,65 @@ const MoviePlayer = () => {
   }
 
   return (
+    // Pura page cover kar liya aur overflow hidden kar diya
     <div className="fixed inset-0 bg-black overflow-hidden z-50">
       
-      {/* 🔙 BACK BUTTON */}
+      {/* 🔙 BACK BUTTON (High Z-index) */}
       <button 
         onClick={() => navigate(-1)} 
-        className="absolute top-4 left-4 md:top-6 md:left-6 z-[100] flex items-center gap-1 md:gap-2 text-white bg-gray-900/80 hover:bg-red-600 px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-bold text-xs md:text-base transition-colors backdrop-blur-md shadow-lg"
+        className="absolute top-4 left-4 lg:top-6 lg:left-6 z-[100] flex items-center gap-1 lg:gap-2 text-white bg-gray-900/80 hover:bg-red-600 px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg font-bold text-xs lg:text-base transition-colors backdrop-blur-md shadow-lg"
       >
         <ArrowLeft size={isMobile ? 16 : 20} /> 
         <span className="hidden sm:block">Back to Details</span>
         <span className="sm:hidden">Back</span>
       </button>
 
-      {/* === JADUI PARDA (LOADING OVERLAY) === */}
-      {!iframeLoaded && (
-        <div className="absolute inset-0 z-[90] bg-black flex flex-col items-center justify-center">
-          <Loader2 size={isMobile ? 40 : 60} className="text-red-600 animate-spin mb-3 md:mb-4" />
-          <div className="text-white font-bold text-lg md:text-2xl tracking-widest drop-shadow-lg">
-            LOADING <span className="text-red-500">{loadingProgress}%</span>
+      {/* === 🔥 MOBILE ROTATE PROMPT (Sirf Mobile & Portrait par show hoga) === */}
+      {isMobile && !isLandscape && (
+        <div className="absolute inset-0 z-[90] bg-black flex flex-col items-center justify-center p-6 text-center">
+          <RotateCcw size={60} className="text-red-600 animate-pulse mb-6" />
+          <div className="text-white font-bold text-2xl tracking-widest drop-shadow-lg mb-2">
+            🔒 PLEASE ROTATE YOUR PHONE
           </div>
-          <p className="text-gray-500 text-xs md:text-sm mt-2 animate-pulse">Bypassing restrictions...</p>
+          <p className="text-gray-400 text-sm animate-pulse">For clean, full-screen and better experience.</p>
+        </div>
+      )}
+
+      {/* === JADUI PARDA (SIMPLE LOADER - 0-100% wala hata diya hai) === */}
+      {videoUrl && !iframeLoaded && (
+        <div className="absolute inset-0 z-[85] bg-black flex flex-col items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mb-4"></div>
+          <p className="text-gray-500 text-sm animate-pulse">Establishing secure connection...</p>
         </div>
       )}
 
       {/* 🔥 THE MASTER JUGAAD CONTAINER 🔥 */}
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full flex items-center justify-center">
         
-        {/* IFRAME: Desktop wesa hi hai, Mobile ko mathematical formula se center + zoom kiya hai */}
+        {/* IFRAME: Jisko humne bara kar ke khiska diya hai */}
         <iframe
           src={videoUrl}
           onLoad={() => setIframeLoaded(true)}
           allowFullScreen
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
-          /* Desktop Setup: Perfect pehle se tha */
-          md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw] md:scale-100
-          /* Mobile Setup: Width 90vw rakh kar center (left 5vw) kiya, phir scale (zoom 1.1) lagaya taake full screen icon na kate aur video bari ho jaye */
-          w-[90vw] h-[150vh] scale-[1.1] -top-[5vh] left-[5vw]
+          /* ✅ DESKTOP SETUP (UNTOUCHED - safe for md:) */
+          md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw]
+          /* ✅ MOBILE SETUP (Perfect fit jab phone rotate hoga) */
+          w-[100vw] h-[100vh] top-0 left-0
           `}
         ></iframe>
 
         {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN) ⬛ */}
+        {/* Kyunke humne mobile par iframe scale nahi kiya, toh ab in pattiyon ki mobile par zaroorat nahi hai (wahan Rotate khud buttons hide kar dega), is liye "hidden md:block" laga diya taake yeh sirf Desktop par dikhein. */}
         
-        {/* 1. Top Header Cover */}
-        <div className="absolute top-0 left-0 w-full h-[8vh] md:h-[10vh] bg-black z-[80] pointer-events-auto"></div>
+        {/* 1. Top Header Cover (Desktop only) */}
+        <div className="hidden md:block absolute top-0 left-0 w-full h-[10vh] bg-black z-[80] pointer-events-auto"></div>
         
         {/* 2. Right Sidebar Cover (Desktop only) */}
         <div className="hidden md:block absolute top-0 right-0 w-[22vw] h-full bg-black z-[80] pointer-events-auto"></div>
         
-        {/* 3. Bottom Text Cover: 🔥 HEIGHT 50VH KAR DI HAI (Aadhi screen cover karegi) taake button confirm chup jaye! */}
-        <div className="absolute bottom-0 left-0 w-full h-[50vh] md:h-[28vh] bg-black z-[80] pointer-events-auto"></div>
+        {/* 3. Bottom Text Cover (Desktop only) */}
+        <div className="hidden md:block absolute bottom-0 left-0 w-full h-[18vh] bg-black z-[80] pointer-events-auto"></div>
 
       </div>
       
