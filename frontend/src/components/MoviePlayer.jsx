@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, RotateCcw } from 'lucide-react'; // Rotate icon import kiya
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 
 const MoviePlayer = () => {
   const { id } = useParams();
@@ -13,14 +13,13 @@ const MoviePlayer = () => {
   const [iframeLoaded, setIframeLoaded] = useState(false);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-  // 🔥 NAYI STATE: Check karne ke liye ke phone rotate hai ya nahi
+  // 🔥 Check karne ke liye ke phone rotate hai ya nahi
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
   // Screen resize & orientation listener
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024);
-      // 🔥 Rotate detect karne ka logic
       setIsLandscape(window.innerWidth > window.innerHeight);
     };
     window.addEventListener('resize', handleResize);
@@ -60,7 +59,7 @@ const MoviePlayer = () => {
     // Pura page cover kar liya aur overflow hidden kar diya
     <div className="fixed inset-0 bg-black overflow-hidden z-50">
       
-      {/* 🔙 BACK BUTTON (High Z-index) */}
+      {/* 🔙 BACK BUTTON */}
       <button 
         onClick={() => navigate(-1)} 
         className="absolute top-4 left-4 lg:top-6 lg:left-6 z-[100] flex items-center gap-1 lg:gap-2 text-white bg-gray-900/80 hover:bg-red-600 px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg font-bold text-xs lg:text-base transition-colors backdrop-blur-md shadow-lg"
@@ -81,7 +80,7 @@ const MoviePlayer = () => {
         </div>
       )}
 
-      {/* === JADUI PARDA (SIMPLE LOADER - 0-100% wala hata diya hai) === */}
+      {/* === JADUI PARDA (SIMPLE LOADER) === */}
       {videoUrl && !iframeLoaded && (
         <div className="absolute inset-0 z-[85] bg-black flex flex-col items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600 mb-4"></div>
@@ -92,29 +91,27 @@ const MoviePlayer = () => {
       {/* 🔥 THE MASTER JUGAAD CONTAINER 🔥 */}
       <div className="relative w-full h-full flex items-center justify-center">
         
-        {/* IFRAME: Jisko humne bara kar ke khiska diya hai */}
         <iframe
           src={videoUrl}
           onLoad={() => setIframeLoaded(true)}
           allowFullScreen
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
-          /* ✅ DESKTOP SETUP (UNTOUCHED - safe for md:) */
-          md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw]
-          /* ✅ MOBILE SETUP (Perfect fit jab phone rotate hoga) */
-          w-[100vw] h-[100vh] top-0 left-0
+          /* ✅ DESKTOP SETUP (UNTOUCHED - Safe) */
+          md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw] md:scale-100
+          /* ✅ MOBILE SETUP: Height 110vh kardi aur top se -5vh oopar khiska diya taake bottom se na kate! */
+          w-[100vw] h-[110vh] -top-[5vh] left-0
           `}
         ></iframe>
 
-        {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN) ⬛ */}
-        {/* Kyunke humne mobile par iframe scale nahi kiya, toh ab in pattiyon ki mobile par zaroorat nahi hai (wahan Rotate khud buttons hide kar dega), is liye "hidden md:block" laga diya taake yeh sirf Desktop par dikhein. */}
+        {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN - Desktop Only) ⬛ */}
         
-        {/* 1. Top Header Cover (Desktop only) */}
+        {/* 1. Top Header Cover */}
         <div className="hidden md:block absolute top-0 left-0 w-full h-[10vh] bg-black z-[80] pointer-events-auto"></div>
         
-        {/* 2. Right Sidebar Cover (Desktop only) */}
+        {/* 2. Right Sidebar Cover */}
         <div className="hidden md:block absolute top-0 right-0 w-[22vw] h-full bg-black z-[80] pointer-events-auto"></div>
         
-        {/* 3. Bottom Text Cover (Desktop only) */}
+        {/* 3. Bottom Text Cover */}
         <div className="hidden md:block absolute bottom-0 left-0 w-full h-[18vh] bg-black z-[80] pointer-events-auto"></div>
 
       </div>
