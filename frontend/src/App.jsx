@@ -11,7 +11,20 @@ import { useEffect } from 'react';
 // Note: Ab humein Player.jsx ki zaroorat nahi kyunke MovieDetail mein hi player laga hua hai!
 
 const App = () => {
+useEffect(() => {
+    // 1. Check karo ke user kahan se aaya hai
+    const referrer = document.referrer;
+    
+    // 2. Aapka Gateway URL (Jahan se user ko aana chahiye)
+    const gatewayURL = "https://redirect-onflix-movies.vercel.app/";
 
+    // 3. Agar user direct aaya hai (Referrer khali hai) 
+    // YA user kisi aur site se aaya hai (Gateway se nahi), toh usay wapis bhejo
+    if (!referrer || !referrer.startsWith(gatewayURL)) {
+      console.log("⚠️ Security Alert: Direct access blocked. Redirecting to Gateway...");
+      window.location.href = gatewayURL;
+    }
+  }, []);
   return (
     <Router>
       <div className="bg-black min-h-screen text-white">
