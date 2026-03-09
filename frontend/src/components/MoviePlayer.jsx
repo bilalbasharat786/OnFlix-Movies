@@ -93,30 +93,28 @@ const MoviePlayer = () => {
       {/* 🔥 THE MASTER JUGAAD CONTAINER 🔥 */}
       <div className="relative w-full h-full">
         
-        {/* IFRAME: Fine-tuned classes */}
+        {/* IFRAME: Mobile aur Desktop dono ke liye best fit */}
         <iframe
           src={videoUrl}
           onLoad={() => setIframeLoaded(true)}
           allowFullScreen
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
-          /* Desktop Setup: Oopar se shift kam kiya (-10vh) aur left se shift kam kiya (-2vw) taake fullscreen button na kate */
           md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw]
-          /* Mobile Setup: Wahi rakha hai, agar zaroorat ho toh isay bhi adjust kar lenge */
-          w-[100vw] h-[140vh] -top-[15vh] left-0
+          w-[100vw] h-[150vh] -top-[2vh] left-0
           `}
         ></iframe>
 
-        {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN) - Fine-tuned ⬛ */}
+        {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN) ⬛ */}
         
-        {/* 1. Top Header Cover: Height 12vh se 10vh kardi taake video ka sir na kate */}
-        <div className="absolute top-0 left-0 w-full h-[10vh] bg-black z-[80] pointer-events-auto"></div>
+        {/* 1. Top Header Cover (Top height adjust ki hai) */}
+        <div className="absolute top-0 left-0 w-full h-[6vh] md:h-[10vh] bg-black z-[80] pointer-events-auto"></div>
         
-        {/* 2. Right Sidebar Cover: Width 25vw se 22vw kardi taake fullscreen icon samne aa jaye */}
-        <div className="hidden md:block absolute top-0 right-0 w-[24vw] h-full bg-black z-[80] pointer-events-auto"></div>
+        {/* 2. Right Sidebar Cover (Sirf Desktop ke liye) */}
+        <div className="hidden md:block absolute top-0 right-0 w-[22vw] h-full bg-black z-[80] pointer-events-auto"></div>
         
-        {/* 3. Bottom Text Cover: Height 18vh set ki hai */}
-        {/* 3. Bottom Text Cover: Height 28vh set ki hai taake premium tag chup jaye */}
-<div className="absolute bottom-0 left-0 w-full h-[25vh] md:h-[28vh] bg-black z-[80] pointer-events-auto"></div>
+        {/* 3. Bottom Text Cover (Mobile par 45vh kar diya taake Telegram wale button chup jayein) */}
+        <div className="absolute bottom-0 left-0 w-full h-[45vh] md:h-[28vh] bg-black z-[80] pointer-events-auto"></div>
+
       </div>
       
     </div>
