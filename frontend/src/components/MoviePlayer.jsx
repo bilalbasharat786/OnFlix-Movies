@@ -98,8 +98,8 @@ const MoviePlayer = () => {
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
           /* ✅ DESKTOP SETUP (UNTOUCHED - Safe) */
           md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw] md:scale-100
-          /* ✅ MOBILE SETUP: Height 110vh kardi aur top se -5vh oopar khiska diya taake bottom se na kate! */
-          w-[100vw] h-[110vh] -top-[5vh] left-0
+          /* ✅ MOBILE SETUP: Height 120vh kardi aur top se -10vh oopar khiska diya taake "Home" logo ghayab ho aur bottom se na kate! */
+          w-[100vw] h-[120vh] -top-[10vh] left-0
           `}
         ></iframe>
 
