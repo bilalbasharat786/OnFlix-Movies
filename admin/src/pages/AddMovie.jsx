@@ -211,7 +211,7 @@ const AddMovie = () => {
   // Dropdown lists
   const currentYear = new Date().getFullYear();
   const yearsList = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i);
-  const countsList = [20, 40, 60, 80, 100];
+  const countsList = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200];
   const regionsList = [
     { code: 'hi', name: 'Bollywood (Hindi)' },
     { code: 'en', name: 'Hollywood (English)' },
