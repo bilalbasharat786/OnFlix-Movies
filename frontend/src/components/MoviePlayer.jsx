@@ -93,27 +93,29 @@ const MoviePlayer = () => {
       {/* 🔥 THE MASTER JUGAAD CONTAINER 🔥 */}
       <div className="relative w-full h-full">
         
-        {/* IFRAME: Mobile aur Desktop dono ke liye best fit */}
+        {/* IFRAME: Desktop wesa hi hai, Mobile ko mathematical formula se center + zoom kiya hai */}
         <iframe
           src={videoUrl}
           onLoad={() => setIframeLoaded(true)}
           allowFullScreen
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
-          md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw]
-          w-[100vw] h-[150vh] -top-[2vh] left-0
+          /* Desktop Setup: Perfect pehle se tha */
+          md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw] md:scale-100
+          /* Mobile Setup: Width 90vw rakh kar center (left 5vw) kiya, phir scale (zoom 1.1) lagaya taake full screen icon na kate aur video bari ho jaye */
+          w-[90vw] h-[150vh] scale-[1.1] -top-[5vh] left-[5vw]
           `}
         ></iframe>
 
         {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN) ⬛ */}
         
-        {/* 1. Top Header Cover (Top height adjust ki hai) */}
-        <div className="absolute top-0 left-0 w-full h-[6vh] md:h-[10vh] bg-black z-[80] pointer-events-auto"></div>
+        {/* 1. Top Header Cover */}
+        <div className="absolute top-0 left-0 w-full h-[8vh] md:h-[10vh] bg-black z-[80] pointer-events-auto"></div>
         
-        {/* 2. Right Sidebar Cover (Sirf Desktop ke liye) */}
+        {/* 2. Right Sidebar Cover (Desktop only) */}
         <div className="hidden md:block absolute top-0 right-0 w-[22vw] h-full bg-black z-[80] pointer-events-auto"></div>
         
-        {/* 3. Bottom Text Cover (Mobile par 45vh kar diya taake Telegram wale button chup jayein) */}
-        <div className="absolute bottom-0 left-0 w-full h-[45vh] md:h-[28vh] bg-black z-[80] pointer-events-auto"></div>
+        {/* 3. Bottom Text Cover: 🔥 HEIGHT 50VH KAR DI HAI (Aadhi screen cover karegi) taake button confirm chup jaye! */}
+        <div className="absolute bottom-0 left-0 w-full h-[50vh] md:h-[28vh] bg-black z-[80] pointer-events-auto"></div>
 
       </div>
       
