@@ -159,7 +159,7 @@ const Bollywood = () => {
         ) : movies.length === 0 ? (
           <div className="col-span-full text-center text-gray-400 mt-10">
             <p className="text-xl">
-                {selectedYear || selectedGenre ? 'Koi aesi Bollywood movie nahi mili 😢' : 'Koi Bollywood movie nahi mili 😢'}
+                {selectedYear || selectedGenre ? 'Not Found' : 'Not Found'}
             </p>
           </div>
         ) : (

@@ -170,14 +170,14 @@ const AddMovie = () => {
 
             await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, newMovieData);
             addedCount++;
-            setBulkProgress(`Abhi tak ${addedCount} high-rated movies add ho gayin hain... 🚀`);
+            setBulkProgress(`Abhi tak ${addedCount} high-rated movies add ho gayin hain...`);
             
           } catch (err) {
             console.error(`Movie add karne mein masla (${tmdbMovie.title}):`, err);
           }
         }
       }
-      toast.success(`🎉 Kamal ho gaya! Total ${addedCount} High-Rated Movies add huin. (${skippedCount} bekar movies skip ki gayin!)`);
+      toast.success(` Kamal ho gaya! Total ${addedCount} High-Rated Movies add huin. (${skippedCount} bekar movies skip ki gayin!)`);
     } catch (error) {
       console.error("Bulk Fetching mein error aya:", error);
       toast.error("Auto Fetch ruk gaya, check console! ❌");
@@ -195,7 +195,7 @@ const AddMovie = () => {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, movie);
 
       if (response.status === 201) {
-        toast.success("Movie Added Successfully! 🚀");
+        toast.success("Movie Added Successfully! ");
         setMovie({
           title: '', posterUrl: '', imdbId: '', customUrl: '', year: new Date().getFullYear(), language: 'Hindi', category: 'Bollywood', genres: '', rating: '', isHero: false 
         });
