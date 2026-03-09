@@ -59,6 +59,23 @@ const MoviePlayer = () => {
     // Pura page cover kar liya aur overflow hidden kar diya
     <div className="fixed inset-0 bg-black overflow-hidden z-50">
       
+      {/* 🔥 THE MAGIC FIX: Fullscreen Reset Styles 🔥 */}
+      {/* Jab user fullscreen button dabayega toh yeh CSS humare shift kiye hue iframe ko wapis 100% normal kar degi taake video na kate! */}
+      <style>
+        {`
+          iframe:fullscreen, 
+          iframe:-webkit-full-screen, 
+          iframe:-moz-full-screen, 
+          iframe:-ms-fullscreen {
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            transform: none !important;
+          }
+        `}
+      </style>
+
       {/* 🔙 BACK BUTTON */}
       <button 
         onClick={() => navigate(-1)} 
@@ -98,7 +115,7 @@ const MoviePlayer = () => {
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
           /* ✅ DESKTOP SETUP (UNTOUCHED - Safe) */
           md:w-[125vw] md:h-[120vh] md:-top-[20vh] md:-left-[2vw] md:scale-100
-          /* ✅ MOBILE SETUP: Height 120vh kardi aur top se -10vh oopar khiska diya taake "Home" logo ghayab ho aur bottom se na kate! */
+          /* ✅ MOBILE SETUP: Default landscape view (Neechay se na katne ke liye) */
           w-[100vw] h-[120vh] -top-[20vh] left-0
           `}
         ></iframe>
