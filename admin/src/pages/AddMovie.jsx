@@ -24,18 +24,20 @@ const AddMovie = () => {
   const [bulkProgress, setBulkProgress] = useState("");
   const [selectedBulkYear, setSelectedBulkYear] = useState(new Date().getFullYear());
   
-  // 🔥 NAYE STATES: Custom Count aur Region ke liye
+  // 🔥 STATES: Custom Count aur Region ke liye
   const [selectedMovieCount, setSelectedMovieCount] = useState(20);
   const [selectedRegion, setSelectedRegion] = useState('hi'); // Default: Hindi (Bollywood)
 
+  // API KEYS
   const TMDB_API_KEY = "944a4dcfa30d2998783dd7ba8ba5c664";
+  const OMDB_API_KEY = "7ba12079"; // Tumhari Asli OMDb Key
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setMovie({ ...movie, [e.target.name]: value });
   };
 
-  // === SMART MAGIC FUNCTION (Single Movie Manual Fetch) ===
+  // === SMART HYBRID FUNCTION (Manual Fetch) ===
   const fetchTMDBDetails = async () => {
     if (!movie.imdbId) {
       toast.warning("Pehle IMDB ID likhein! ⚠️");
@@ -54,11 +56,7 @@ const AddMovie = () => {
         const detailRes = await axios.get(detailUrl);
         const fullMovieData = detailRes.data;
 
-        const fullPosterUrl = tmdbMovie.poster_path
-          ? `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}`
-          : '';
-        const releaseYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : new Date().getFullYear();
-
+        const fullPosterUrl = tmdbMovie.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}` : '';
         const fetchedGenres = fullMovieData.genres ? fullMovieData.genres.map(g => g.name).join(', ') : '';
         const fetchedRating = fullMovieData.vote_average ? fullMovieData.vote_average.toFixed(1) : '';
 
@@ -66,29 +64,38 @@ const AddMovie = () => {
         let autoCategory = 'Bollywood';
         let autoLanguage = 'Hindi';
 
-        if (ogLang === 'en') {
-            autoCategory = 'Hollywood';
-            autoLanguage = 'Dual Audio';
-        } else if (['te', 'ta', 'ml', 'kn'].includes(ogLang)) {
-            autoCategory = 'Tollywood';
-            autoLanguage = 'Hindi Dubbed';
-        } else if (ogLang === 'ko') {
-            autoCategory = 'K-Drama';
-            autoLanguage = 'Hindi Dubbed';
+        if (ogLang === 'en') { autoCategory = 'Hollywood'; autoLanguage = 'Dual Audio'; } 
+        else if (['te', 'ta', 'ml', 'kn'].includes(ogLang)) { autoCategory = 'Tollywood'; autoLanguage = 'Hindi Dubbed'; } 
+        else if (ogLang === 'ko') { autoCategory = 'K-Drama'; autoLanguage = 'Hindi Dubbed'; }
+
+        // 🔥 OMDb HYBRID MAGIC: TMDB data aane ke baad, Title aur Year IMDB (OMDb) se mangwao
+        let finalTitle = tmdbMovie.title || '';
+        let finalYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : new Date().getFullYear();
+
+        try {
+          const omdbUrl = `https://www.omdbapi.com/?i=${movie.imdbId}&apikey=${OMDB_API_KEY}`;
+          const omdbRes = await axios.get(omdbUrl);
+          
+          if (omdbRes.data && omdbRes.data.Response === "True") {
+              finalTitle = omdbRes.data.Title;
+              finalYear = parseInt(omdbRes.data.Year) || finalYear; 
+          }
+        } catch (omdbError) {
+          console.error("OMDb fetch mein masla aya (Manual):", omdbError);
         }
 
         setMovie({
           ...movie,
-          title: tmdbMovie.title || '',
+          title: finalTitle, // 100% IMDB Accurate
           posterUrl: fullPosterUrl,
-          year: releaseYear,
+          year: finalYear,   // 100% IMDB Accurate
           language: autoLanguage, 
           category: autoCategory,
           genres: fetchedGenres, 
           rating: fetchedRating  
         });
 
-        toast.success(`Magic! ✨ ${autoCategory} Movie Data Auto-Filled!`);
+        toast.success(`Hybrid Magic! ✨ ${autoCategory} Data Auto-Filled (IMDB Title)!`);
       } else {
         toast.error("Is ID ki movie TMDB par nahi mili ❌");
       }
@@ -100,37 +107,32 @@ const AddMovie = () => {
     }
   };
 
-  // === 🚀 VIP MAGIC FUNCTION: Auto-Fetch Top Movies (With Rating Filter) ===
+  // === 🚀 VIP HYBRID FUNCTION: Auto-Fetch Top Movies (With Rating & OMDb) ===
   const autoFetchTopMovies = async () => {
-    // Dropdown se selected region ka naam nikalne ke liye for alert
     const regionNames = { 'hi': 'Bollywood', 'en': 'Hollywood', 'te': 'Tollywood (Telugu)', 'ta': 'Tollywood (Tamil)', 'ko': 'South Korean' };
     const regionName = regionNames[selectedRegion] || 'Movies';
 
-    const confirmImport = window.confirm(`Kya aap waqai ${selectedBulkYear} ki Top ${selectedMovieCount} ${regionName} movies (Sirf 5.0+ Rating wali) add karna chahte hain?`);
+    const confirmImport = window.confirm(`Kya aap waqai ${selectedBulkYear} ki Top ${selectedMovieCount} ${regionName} movies add karna chahte hain? (TMDB + OMDb Hybrid Mode)`);
     if (!confirmImport) return;
 
     setBulkLoading(true);
     let addedCount = 0;
-    let skippedCount = 0; // Low rating wali kitni skip huin
-
-    // Har page par 20 movies hoti hain, is liye hum count ke hisaab se pages loop karenge
+    let skippedCount = 0; 
     const pagesToFetch = Math.ceil(selectedMovieCount / 20);
 
     try {
       for (let page = 1; page <= pagesToFetch; page++) {
-        setBulkProgress(`TMDB se Page ${page}/${pagesToFetch} ki movies dhoondh raha hoon...`);
+        setBulkProgress(`TMDB se Page ${page}/${pagesToFetch} dhoondh raha hoon...`);
         
-        // 🔥 JADU: API mein Region (with_original_language) aur Year dono pass kiye hain
         const discoverUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=${selectedRegion}&primary_release_year=${selectedBulkYear}&sort_by=popularity.desc&page=${page}`;
         const res = await axios.get(discoverUrl);
         const moviesList = res.data.results;
 
         for (const tmdbMovie of moviesList) {
-          // Agar desired count poora ho jaye toh loop break kar do
           if (addedCount >= selectedMovieCount) break;
 
           try {
-            // 🔥 NAYA LOGIC: Low Rating Filter (5.0 se kam skip kar do)
+            // Low Rating Filter
             if (!tmdbMovie.vote_average || tmdbMovie.vote_average < 5.0) {
               skippedCount++;
               continue; 
@@ -144,24 +146,37 @@ const AddMovie = () => {
             if (!imdbId) continue;
 
             const fullPosterUrl = fullMovieData.poster_path ? `https://image.tmdb.org/t/p/w500${fullMovieData.poster_path}` : '';
-            const releaseYear = fullMovieData.release_date ? fullMovieData.release_date.split('-')[0] : selectedBulkYear;
-            
             const fetchedGenres = fullMovieData.genres ? fullMovieData.genres.map(g => g.name).join(', ') : '';
             const fetchedRating = fullMovieData.vote_average ? fullMovieData.vote_average.toFixed(1) : '';
 
-            // Auto-detect Category & Language based on Region
             let autoCategory = 'Bollywood';
             let autoLanguage = 'Hindi';
             if (selectedRegion === 'en') { autoCategory = 'Hollywood'; autoLanguage = 'Dual Audio'; }
             else if (['te', 'ta'].includes(selectedRegion)) { autoCategory = 'Tollywood'; autoLanguage = 'Hindi Dubbed'; }
             else if (selectedRegion === 'ko') { autoCategory = 'K-Drama'; autoLanguage = 'Hindi Dubbed'; }
 
+            // 🔥 OMDb HYBRID MAGIC IN BULK
+            let finalTitle = fullMovieData.title || '';
+            let finalYear = fullMovieData.release_date ? fullMovieData.release_date.split('-')[0] : selectedBulkYear;
+
+            try {
+                const omdbUrl = `https://www.omdbapi.com/?i=${imdbId}&apikey=${OMDB_API_KEY}`;
+                const omdbRes = await axios.get(omdbUrl);
+                
+                if (omdbRes.data && omdbRes.data.Response === "True") {
+                    finalTitle = omdbRes.data.Title;
+                    finalYear = parseInt(omdbRes.data.Year) || finalYear; 
+                }
+            } catch (omdbError) {
+                console.error(`OMDb API masla for ${imdbId}:`, omdbError);
+            }
+
             const newMovieData = {
-              title: fullMovieData.title || '',
+              title: finalTitle, // Accurate IMDB Title
               posterUrl: fullPosterUrl,
               imdbId: imdbId,
               customUrl: '',
-              year: releaseYear,
+              year: finalYear,   // Accurate IMDB Year
               language: autoLanguage, 
               category: autoCategory, 
               genres: fetchedGenres, 
@@ -170,14 +185,14 @@ const AddMovie = () => {
 
             await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, newMovieData);
             addedCount++;
-            setBulkProgress(`Abhi tak ${addedCount} high-rated movies add ho gayin hain...`);
+            setBulkProgress(`Abhi tak ${addedCount} Hybrid movies add ho gayin...`);
             
           } catch (err) {
             console.error(`Movie add karne mein masla (${tmdbMovie.title}):`, err);
           }
         }
       }
-      toast.success(` Kamal ho gaya! Total ${addedCount} High-Rated Movies add huin. (${skippedCount} bekar movies skip ki gayin!)`);
+      toast.success(`🎉 Kamal ho gaya! Total ${addedCount} 100% Accurate Movies add huin. (${skippedCount} skip ki gayin)`);
     } catch (error) {
       console.error("Bulk Fetching mein error aya:", error);
       toast.error("Auto Fetch ruk gaya, check console! ❌");
@@ -195,7 +210,7 @@ const AddMovie = () => {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, movie);
 
       if (response.status === 201) {
-        toast.success("Movie Added Successfully! ");
+        toast.success("Movie Added Successfully! 🚀");
         setMovie({
           title: '', posterUrl: '', imdbId: '', customUrl: '', year: new Date().getFullYear(), language: 'Hindi', category: 'Bollywood', genres: '', rating: '', isHero: false 
         });
@@ -208,7 +223,7 @@ const AddMovie = () => {
     }
   };
 
-  // Dropdown lists
+  // Dropdowns Lists
   const currentYear = new Date().getFullYear();
   const yearsList = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i);
   const countsList = [20, 40, 60, 80, 100, 120, 140, 160, 180, 200];
@@ -226,69 +241,34 @@ const AddMovie = () => {
         <span>Add New Movie</span>
       </h2>
 
-      {/* === 🔥 VIP AUTO FETCH BOX (Fully Responsive) === */}
+      {/* === 🔥 VIP AUTO FETCH BOX === */}
       <div className="mb-8 p-4 bg-gray-900 border-2 border-dashed border-red-500 rounded-lg">
         <h3 className="text-lg md:text-xl text-red-500 font-bold mb-2 text-center">🔥 Auto-Import Magic</h3>
-        <p className="text-xs md:text-sm text-gray-400 mb-4 text-center">Sirf 5.0+ rating wali premium movies automatically add karein!</p>
+        <p className="text-xs md:text-sm text-gray-400 mb-4 text-center">TMDB se Poster, OMDb se 100% Accurate Title & Year!</p>
         
-        {/* Naye Filters Row (Grid System for Mobile & Desktop) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          
-          {/* 1. Region Selector */}
           <div>
             <label className="block text-gray-400 text-xs mb-1">Industry / Region</label>
-            <select 
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              disabled={bulkLoading || loading}
-              className="w-full p-2.5 bg-gray-800 text-white rounded font-medium border border-gray-600 focus:outline-none focus:border-red-500 text-sm"
-            >
-              {regionsList.map(r => (
-                <option key={r.code} value={r.code}>{r.name}</option>
-              ))}
+            <select value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)} disabled={bulkLoading || loading} className="w-full p-2.5 bg-gray-800 text-white rounded font-medium border border-gray-600 focus:outline-none focus:border-red-500 text-sm">
+              {regionsList.map(r => ( <option key={r.code} value={r.code}>{r.name}</option> ))}
             </select>
           </div>
-
-          {/* 2. Year Selector */}
           <div>
             <label className="block text-gray-400 text-xs mb-1">Release Year</label>
-            <select 
-              value={selectedBulkYear}
-              onChange={(e) => setSelectedBulkYear(e.target.value)}
-              disabled={bulkLoading || loading}
-              className="w-full p-2.5 bg-gray-800 text-white rounded font-medium border border-gray-600 focus:outline-none focus:border-red-500 text-sm"
-            >
-              {yearsList.map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
+            <select value={selectedBulkYear} onChange={(e) => setSelectedBulkYear(e.target.value)} disabled={bulkLoading || loading} className="w-full p-2.5 bg-gray-800 text-white rounded font-medium border border-gray-600 focus:outline-none focus:border-red-500 text-sm">
+              {yearsList.map(y => ( <option key={y} value={y}>{y}</option> ))}
             </select>
           </div>
-
-          {/* 3. Count Selector */}
           <div>
             <label className="block text-gray-400 text-xs mb-1">Max Movies to Add</label>
-            <select 
-              value={selectedMovieCount}
-              onChange={(e) => setSelectedMovieCount(Number(e.target.value))}
-              disabled={bulkLoading || loading}
-              className="w-full p-2.5 bg-gray-800 text-white rounded font-medium border border-gray-600 focus:outline-none focus:border-red-500 text-sm"
-            >
-              {countsList.map(c => (
-                <option key={c} value={c}>{c} Movies</option>
-              ))}
+            <select value={selectedMovieCount} onChange={(e) => setSelectedMovieCount(Number(e.target.value))} disabled={bulkLoading || loading} className="w-full p-2.5 bg-gray-800 text-white rounded font-medium border border-gray-600 focus:outline-none focus:border-red-500 text-sm">
+              {countsList.map(c => ( <option key={c} value={c}>{c} Movies</option> ))}
             </select>
           </div>
-
         </div>
 
-        {/* Action Button */}
-        <button
-          type="button"
-          onClick={autoFetchTopMovies}
-          disabled={bulkLoading || loading}
-          className={`w-full py-3 font-bold text-white rounded shadow-lg transition-all ${bulkLoading ? 'bg-gray-600 cursor-not-allowed animate-pulse' : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700'}`}
-        >
-          {bulkLoading ? `Rukiye... ${bulkProgress}` : `🚀 Fetch ${selectedMovieCount} High-Rated Movies`}
+        <button type="button" onClick={autoFetchTopMovies} disabled={bulkLoading || loading} className={`w-full py-3 font-bold text-white rounded shadow-lg transition-all ${bulkLoading ? 'bg-gray-600 cursor-not-allowed animate-pulse' : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700'}`}>
+          {bulkLoading ? `Rukiye... ${bulkProgress}` : `🚀 Fetch Hybrid Data (${selectedMovieCount})`}
         </button>
       </div>
 
@@ -299,26 +279,23 @@ const AddMovie = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* 1. IMDB Input */}
         <div>
           <label className="block text-gray-400 text-sm mb-1">1. Paste IMDB ID First</label>
           <div className="flex flex-col sm:flex-row gap-2">
             <input type="text" name="imdbId" required value={movie.imdbId} onChange={handleChange} className="w-full p-2.5 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-red-500" placeholder="e.g. tt12844910" />
             <button type="button" onClick={fetchTMDBDetails} disabled={fetchingData || bulkLoading} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded font-bold whitespace-nowrap transition">
-              {fetchingData ? "Fetching..." : "Fetch Auto Data ✨"}
+              {fetchingData ? "Fetching..." : "Fetch Hybrid Data ✨"}
             </button>
           </div>
         </div>
 
-        {/* 2. Custom URL */}
         <div className="p-4 bg-gray-900 border border-yellow-600 rounded">
           <label className="block text-yellow-500 text-sm mb-1 font-bold">Custom Player URL (Optional)</label>
           <input type="text" name="customUrl" value={movie.customUrl} onChange={handleChange} className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-yellow-500" placeholder="e.g. https://streamwish.to/e/xyz123" />
         </div>
 
-        {/* 3. Title & Poster */}
         <div>
-          <label className="block text-gray-400 text-sm mb-1">Movie Title</label>
+          <label className="block text-gray-400 text-sm mb-1">Movie Title (Accurate)</label>
           <input type="text" name="title" required value={movie.title} onChange={handleChange} className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600" />
         </div>
 
@@ -327,7 +304,6 @@ const AddMovie = () => {
           <input type="text" name="posterUrl" required value={movie.posterUrl} onChange={handleChange} className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600" />
         </div>
 
-        {/* 4. Dropdowns Row */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full md:w-1/3">
             <label className="block text-gray-400 text-sm mb-1">Year</label>
@@ -355,7 +331,6 @@ const AddMovie = () => {
           </div>
         </div>
 
-        {/* 5. Genres & Rating */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full md:w-2/3">
             <label className="block text-gray-400 text-sm mb-1">Genres (e.g. Action, Comedy)</label>
@@ -367,22 +342,11 @@ const AddMovie = () => {
           </div>
         </div>
 
-        {/* 6. Hero Checkbox */}
         <div className="p-4 bg-gray-900 border border-red-500 rounded flex items-center gap-3">
-          <input 
-            type="checkbox" 
-            name="isHero" 
-            id="isHero" 
-            checked={movie.isHero} 
-            onChange={handleChange} 
-            className="w-5 h-5 accent-red-600 cursor-pointer" 
-          />
-          <label htmlFor="isHero" className="text-white font-bold cursor-pointer select-none">
-            Add to Hero Section
-          </label>
+          <input type="checkbox" name="isHero" id="isHero" checked={movie.isHero} onChange={handleChange} className="w-5 h-5 accent-red-600 cursor-pointer" />
+          <label htmlFor="isHero" className="text-white font-bold cursor-pointer select-none">Add to Hero Section</label>
         </div>
 
-        {/* Submit Button */}
         <button type="submit" disabled={loading || bulkLoading} className={`w-full py-3 mt-4 font-bold text-white rounded transition ${loading ? 'bg-gray-600' : 'bg-red-600 hover:bg-red-700'}`}>
           {loading ? "Saving to Database..." : "Add Movie to Website"}
         </button>
