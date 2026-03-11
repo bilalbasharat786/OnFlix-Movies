@@ -126,10 +126,10 @@ const MoviePlayer = () => {
         <div className="hidden md:block absolute top-0 left-0 w-full h-[1vh] bg-black z-[80] pointer-events-auto"></div>
         
         {/* 2. Right Sidebar Cover */}
-        <div className="hidden md:block absolute top-0 right-0 w-[20vw] h-full bg-black z-[80] pointer-events-auto"></div>
+        <div className="hidden md:block absolute top-0 right-0 w-[24vw] h-full bg-black z-[80] pointer-events-auto"></div>
         
         {/* 3. Bottom Text Cover */}
-        <div className="hidden md:block absolute bottom-0 left-0 w-full h-[18vh] bg-black z-[80] pointer-events-auto"></div>
+        <div className="hidden md:block absolute bottom-0 left-0 w-full h-[15vh] bg-black z-[80] pointer-events-auto"></div>
 
       </div>
       
