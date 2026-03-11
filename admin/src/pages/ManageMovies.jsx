@@ -27,7 +27,7 @@ export default function ManageMovies({ categoryTitle }) {
   const fetchMovies = async () => {
     try {
       setLoading(true);
-      let url = `${API_BASE_URL}/api/movies/all?limit=1000`;
+      let url = `${API_BASE_URL}/api/movies/all?limit=10000`;
       if (selectedYear) {
         url += `&year=${selectedYear}`;
       }
