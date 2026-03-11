@@ -30,7 +30,7 @@ const AddMovie = () => {
 
   // API KEYS
   const TMDB_API_KEY = "944a4dcfa30d2998783dd7ba8ba5c664";
-  const OMDB_API_KEY = "7ba12079"; // Tumhari Asli OMDb Key
+  const OMDB_API_KEY = "5dbcf12c"; // Tumhari Asli OMDb Key
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
