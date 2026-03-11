@@ -123,7 +123,7 @@ const MoviePlayer = () => {
         {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN - Desktop Only) ⬛ */}
         
         {/* 1. Top Header Cover */}
-        <div className="hidden md:block absolute top-0 left-0 w-full h-[15vh] bg-black z-[80] pointer-events-auto"></div>
+        <div className="hidden md:block absolute top-0 left-0 w-full h-[2vh] bg-black z-[80] pointer-events-auto"></div>
         
         {/* 2. Right Sidebar Cover */}
         <div className="hidden md:block absolute top-0 right-0 w-[22vw] h-full bg-black z-[80] pointer-events-auto"></div>
