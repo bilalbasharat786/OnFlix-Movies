@@ -116,7 +116,7 @@ const MoviePlayer = () => {
           /* ✅ DESKTOP SETUP (UNTOUCHED - Safe) */
           md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw] md:scale-100
           /* ✅ MOBILE SETUP: Default landscape view (Neechay se na katne ke liye) */
-          w-[100vw] h-[120vh] -top-[10vh] left-0
+          w-[100vw] h-[120vh] -top-[20vh] left-0
           `}
         ></iframe>
 
