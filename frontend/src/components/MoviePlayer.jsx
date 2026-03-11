@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+// 🔥 NAYA: 'Play' icon import kiya hai
+import { ArrowLeft, RotateCcw, Play } from 'lucide-react';
 
 const MoviePlayer = () => {
   const { id } = useParams();
@@ -11,9 +12,11 @@ const MoviePlayer = () => {
   // States for Loading & ID Logic
   const [isFetchingLink, setIsFetchingLink] = useState(true);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  
+  // 🔥 NAYA STATE: Fake Play Button ko control karne ke liye
+  const [showPlayOverlay, setShowPlayOverlay] = useState(true);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-  // 🔥 Check karne ke liye ke phone rotate hai ya nahi
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
   // Screen resize & orientation listener
@@ -56,11 +59,9 @@ const MoviePlayer = () => {
   }
 
   return (
-    // Pura page cover kar liya aur overflow hidden kar diya
     <div className="fixed inset-0 bg-black overflow-hidden z-50">
       
       {/* 🔥 THE MAGIC FIX: Fullscreen Reset Styles 🔥 */}
-      {/* Jab user fullscreen button dabayega toh yeh CSS humare shift kiye hue iframe ko wapis 100% normal kar degi taake video na kate! */}
       <style>
         {`
           iframe:fullscreen, 
@@ -86,7 +87,7 @@ const MoviePlayer = () => {
         <span className="sm:hidden">Back</span>
       </button>
 
-      {/* === 🔥 MOBILE ROTATE PROMPT (Sirf Mobile & Portrait par show hoga) === */}
+      {/* === 🔥 MOBILE ROTATE PROMPT === */}
       {isMobile && !isLandscape && (
         <div className="absolute inset-0 z-[90] bg-black flex flex-col items-center justify-center p-6 text-center">
           <RotateCcw size={60} className="text-red-600 animate-pulse mb-6" />
@@ -105,6 +106,23 @@ const MoviePlayer = () => {
         </div>
       )}
 
+      {/* === 🔥 NAYA: FAKE PLAY BUTTON OVERLAY 🔥 === */}
+      {/* Yeh iframe load hone ke baad nazar aayega, aur click hote hi gayab ho jayega */}
+      {iframeLoaded && showPlayOverlay && (
+        <div 
+          onClick={() => setShowPlayOverlay(false)}
+          className="absolute inset-0 z-[82] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm cursor-pointer"
+        >
+          <div className="bg-red-600/90 rounded-full p-5 shadow-[0_0_40px_rgba(220,38,38,0.8)] hover:scale-110 hover:bg-red-500 transition-all duration-300 flex items-center justify-center">
+            {/* Play icon ko center karne ke liye thora right margin (ml-2) diya hai */}
+            <Play fill="currentColor" className="text-white w-14 h-14 ml-2" />
+          </div>
+          <p className="text-white mt-6 font-bold text-xl tracking-[0.2em] animate-pulse drop-shadow-md">
+            TAP TO PLAY
+          </p>
+        </div>
+      )}
+
       {/* 🔥 THE MASTER JUGAAD CONTAINER 🔥 */}
       <div className="relative w-full h-full flex items-center justify-center">
         
@@ -115,20 +133,14 @@ const MoviePlayer = () => {
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
           /* ✅ DESKTOP SETUP (UNTOUCHED - Safe) */
           md:w-[125vw] md:h-[120vh] md:-top-[8vh] md:-left-[2vw] md:scale-100
-          /* ✅ MOBILE SETUP: Default landscape view (Neechay se na katne ke liye) */
+          /* ✅ MOBILE SETUP: Default landscape view */
           w-[100vw] h-[120vh] -top-[20vh] left-0
           `}
         ></iframe>
 
         {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN - Desktop Only) ⬛ */}
-        
-        {/* 1. Top Header Cover */}
         <div className="hidden md:block absolute top-0 left-0 w-full h-[1vh] bg-black z-[80] pointer-events-auto"></div>
-        
-        {/* 2. Right Sidebar Cover */}
         <div className="hidden md:block absolute top-0 right-0 w-[24vw] h-full bg-black z-[80] pointer-events-auto"></div>
-        
-        {/* 3. Bottom Text Cover */}
         <div className="hidden md:block absolute bottom-0 left-0 w-full h-[10vh] bg-black z-[80] pointer-events-auto"></div>
 
       </div>
