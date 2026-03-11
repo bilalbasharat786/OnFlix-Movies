@@ -73,6 +73,7 @@ const AddMovie = () => {
         let finalYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : new Date().getFullYear();
 
         try {
+          const cleanImdbId = movie.imdbId.trim();
           const omdbUrl = `https://www.omdbapi.com/?i=${movie.imdbId}&apikey=${OMDB_API_KEY}`;
           const omdbRes = await axios.get(omdbUrl);
           
@@ -160,6 +161,7 @@ const AddMovie = () => {
             let finalYear = fullMovieData.release_date ? fullMovieData.release_date.split('-')[0] : selectedBulkYear;
 
             try {
+              const cleanImdbId = imdbId.trim();
                 const omdbUrl = `https://www.omdbapi.com/?i=${imdbId}&apikey=${OMDB_API_KEY}`;
                 const omdbRes = await axios.get(omdbUrl);
                 
