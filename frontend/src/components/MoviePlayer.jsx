@@ -114,7 +114,7 @@ const MoviePlayer = () => {
           allowFullScreen
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
           /* ✅ DESKTOP SETUP (UNTOUCHED - Safe) */
-          md:w-[125vw] md:h-[120vh] md:-top-[10vh] md:-left-[2vw] md:scale-100
+          md:w-[125vw] md:h-[120vh] md:-top-[8vh] md:-left-[2vw] md:scale-100
           /* ✅ MOBILE SETUP: Default landscape view (Neechay se na katne ke liye) */
           w-[100vw] h-[120vh] -top-[20vh] left-0
           `}
