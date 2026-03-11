@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// 🔥 NAYA: 'Play' icon import kiya hai
 import { ArrowLeft, RotateCcw, Play } from 'lucide-react';
 
 const MoviePlayer = () => {
@@ -13,7 +12,7 @@ const MoviePlayer = () => {
   const [isFetchingLink, setIsFetchingLink] = useState(true);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   
-  // 🔥 NAYA STATE: Fake Play Button ko control karne ke liye
+  // 🔥 FAKE BUTTON STATE
   const [showPlayOverlay, setShowPlayOverlay] = useState(true);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -50,6 +49,19 @@ const MoviePlayer = () => {
     fetchMovie();
   }, [id]);
 
+  // 🔥 NAYA JADU (TIMING LOGIC) 🔥
+  // Jaise hi iframe load ho jaye, we will start a timer to fade out the fake button
+  // 5 second is enough time for user to see the button and tap it.
+  useEffect(() => {
+    if (iframeLoaded) {
+      const timer = setTimeout(() => {
+        setShowPlayOverlay(false);
+      }, 5000); // 5 Seconds bad button fade out
+      
+      return () => clearTimeout(timer); // Clean up
+    }
+  }, [iframeLoaded]);
+
   if (isFetchingLink) {
     return (
       <div className="min-h-screen bg-black flex justify-center items-center">
@@ -61,7 +73,7 @@ const MoviePlayer = () => {
   return (
     <div className="fixed inset-0 bg-black overflow-hidden z-50">
       
-      {/* 🔥 THE MAGIC FIX: Fullscreen Reset Styles 🔥 */}
+      {/* 🔥 Fullscreen Reset Styles 🔥 */}
       <style>
         {`
           iframe:fullscreen, 
@@ -106,32 +118,37 @@ const MoviePlayer = () => {
         </div>
       )}
 
-      {/* === 🔥 NAYA: FAKE PLAY BUTTON OVERLAY 🔥 === */}
-      {/* Yeh iframe load hone ke baad nazar aayega, aur click hote hi gayab ho jayega */}
-      {iframeLoaded && showPlayOverlay && (
-        <div 
-          onClick={() => setShowPlayOverlay(false)}
-          className="absolute inset-0 z-[82] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm cursor-pointer"
-        >
-          <div className="bg-red-600/90 rounded-full p-5 shadow-[0_0_40px_rgba(220,38,38,0.8)] hover:scale-110 hover:bg-red-500 transition-all duration-300 flex items-center justify-center">
-            {/* Play icon ko center karne ke liye thora right margin (ml-2) diya hai */}
-            <Play fill="currentColor" className="text-white w-14 h-14 ml-2" />
-          </div>
-          <p className="text-white mt-6 font-bold text-xl tracking-[0.2em] animate-pulse drop-shadow-md">
-            TAP TO PLAY
-          </p>
-        </div>
-      )}
-
       {/* 🔥 THE MASTER JUGAAD CONTAINER 🔥 */}
       <div className="relative w-full h-full flex items-center justify-center">
         
+        {/* === 🔥 NAYA: FAKE PLAY BUTTON OVERLAY (FULLY NON-INTERACTIVE) 🔥 === */}
+        {/* We keep it visually but technically browser will treat it as transparent to clicks */}
+        {iframeLoaded && (
+          <div 
+            className={`absolute z-[82] flex flex-col items-center justify-center 
+            transition-all duration-1000 ease-out pointer-events-none 
+            /* Button ab iframe ke hisaab se nahi, SCREEN ke hisaab se center hai */
+            top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+            ${showPlayOverlay ? "opacity-100" : "opacity-0 scale-90" }`}
+          >
+            {/* Dark background overlay on video only */}
+            <div className={`absolute inset-0 bg-black/40 backdrop-blur-sm -z-10 w-[200vw] h-[200vh] transition-opacity duration-1000 ${showPlayOverlay ? "opacity-100" : "opacity-0"}`}></div>
+
+            <div className="bg-red-600/90 rounded-full p-5 shadow-[0_0_40px_rgba(220,38,38,0.8)] hover:scale-110 hover:bg-red-500 transition-all duration-300 flex items-center justify-center">
+              <Play fill="currentColor" className="text-white w-14 h-14 ml-2" />
+            </div>
+            <p className="text-white mt-6 font-bold text-xl tracking-[0.2em] animate-pulse drop-shadow-md">
+              TAP TO PLAY
+            </p>
+          </div>
+        )}
+
         <iframe
           src={videoUrl}
           onLoad={() => setIframeLoaded(true)}
           allowFullScreen
           className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
-          /* ✅ DESKTOP SETUP (UNTOUCHED - Safe) */
+          /* ✅ DESKTOP SETUP (Safe) */
           md:w-[125vw] md:h-[120vh] md:-top-[8vh] md:-left-[2vw] md:scale-100
           /* ✅ MOBILE SETUP: Default landscape view */
           w-[100vw] h-[120vh] -top-[20vh] left-0
