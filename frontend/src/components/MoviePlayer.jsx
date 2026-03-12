@@ -50,8 +50,6 @@ const MoviePlayer = () => {
   }, [id]);
 
   // 🔥 NAYA JADU (TIMING LOGIC) 🔥
-  // Jaise hi iframe load ho jaye, we will start a timer to fade out the fake button
-  // 5 second is enough time for user to see the button and tap it.
   useEffect(() => {
     if (iframeLoaded) {
       const timer = setTimeout(() => {
@@ -71,24 +69,8 @@ const MoviePlayer = () => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden z-50">
+    <div className="fixed inset-0 bg-black z-50">
       
-      {/* 🔥 Fullscreen Reset Styles 🔥 */}
-      <style>
-        {`
-          iframe:fullscreen, 
-          iframe:-webkit-full-screen, 
-          iframe:-moz-full-screen, 
-          iframe:-ms-fullscreen {
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            transform: none !important;
-          }
-        `}
-      </style>
-
       {/* 🔙 BACK BUTTON */}
       <button 
         onClick={() => navigate(-1)} 
@@ -118,20 +100,17 @@ const MoviePlayer = () => {
         </div>
       )}
 
-      {/* 🔥 THE MASTER JUGAAD CONTAINER 🔥 */}
+      {/* 🔥 MAIN CONTAINER 🔥 */}
       <div className="relative w-full h-full flex items-center justify-center">
         
-        {/* === 🔥 NAYA: FAKE PLAY BUTTON OVERLAY (FULLY NON-INTERACTIVE) 🔥 === */}
-        {/* We keep it visually but technically browser will treat it as transparent to clicks */}
+        {/* === FAKE PLAY BUTTON OVERLAY === */}
         {iframeLoaded && (
           <div 
             className={`absolute z-[82] flex flex-col items-center justify-center 
             transition-all duration-1000 ease-out pointer-events-none 
-            /* Button ab iframe ke hisaab se nahi, SCREEN ke hisaab se center hai */
             top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
             ${showPlayOverlay ? "opacity-100" : "opacity-0 scale-90" }`}
           >
-            {/* Dark background overlay on video only */}
             <div className={`absolute inset-0 bg-black/40 backdrop-blur-sm -z-10 w-[200vw] h-[200vh] transition-opacity duration-1000 ${showPlayOverlay ? "opacity-100" : "opacity-0"}`}></div>
 
             <div className="bg-red-600/90 rounded-full p-5 shadow-[0_0_40px_rgba(220,38,38,0.8)] hover:scale-110 hover:bg-red-500 transition-all duration-300 flex items-center justify-center">
@@ -143,22 +122,13 @@ const MoviePlayer = () => {
           </div>
         )}
 
+        {/* Standard Clean Iframe */}
         <iframe
           src={videoUrl}
           onLoad={() => setIframeLoaded(true)}
           allowFullScreen
-          className={`absolute border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}
-          /* ✅ DESKTOP SETUP (Safe) */
-          md:w-[125vw] md:h-[120vh] md:-top-[8vh] md:-left-[2vw] md:scale-100
-          /* ✅ MOBILE SETUP: Default landscape view */
-          w-[100vw] h-[120vh] -top-[20vh] left-0
-          `}
+          className={`w-full h-full border-none transition-opacity duration-1000 ${iframeLoaded ? "opacity-100" : "opacity-0"}`}
         ></iframe>
-
-        {/* ⬛ BLACK OVERLAYS (KAALI PATTIYAN - Desktop Only) ⬛ */}
-        <div className="hidden md:block absolute top-0 left-0 w-full h-[1vh] bg-black z-[80] pointer-events-auto"></div>
-        <div className="hidden md:block absolute top-0 right-0 w-[24vw] h-full bg-black z-[80] pointer-events-auto"></div>
-        <div className="hidden md:block absolute bottom-0 left-0 w-full h-[10vh] bg-black z-[80] pointer-events-auto"></div>
 
       </div>
       
