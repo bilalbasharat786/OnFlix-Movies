@@ -124,8 +124,6 @@ export default function ManageMovies({ categoryTitle }) {
   };
 
   const handleDelete = async (id, title) => {
-    const confirmDelete = window.confirm(`⚠️ WARNING: Delete "${title}"?`);
-    if (!confirmDelete) return; 
     try {
       await axios.delete(`${API_BASE_URL}/api/movies/${id}`);
       toast.success(`🗑️ Deleted!`);
@@ -242,7 +240,7 @@ export default function ManageMovies({ categoryTitle }) {
                     <div className="mt-auto flex gap-1 pt-2">
                       <button onClick={() => openPreview(movie)} className="bg-yellow-600 text-white flex-1 py-1 rounded text-[10px] font-bold">Check</button>
                       <button onClick={() => handleEditClick(movie)} className="bg-gray-600 text-white flex-1 py-1 rounded text-[10px] font-bold">Edit</button>
-                      <button onClick={() => handleDelete(movie._id, movie.title)} className="bg-red-600 text-white flex-1 py-1 rounded text-[10px] font-bold">Delete</button>
+                      <button onClick={() => handleDelete(movie._id, movie._title)} className="bg-red-600 text-white flex-1 py-1 rounded text-[10px] font-bold">Delete</button>
                     </div>
                   </div>
                 </div>

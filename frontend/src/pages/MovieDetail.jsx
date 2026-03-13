@@ -68,8 +68,8 @@ const MovieDetail = () => {
   if (!movie) {
     return (
       <div className="min-h-screen bg-black flex justify-center items-center flex-col">
-        <h1 className="text-3xl text-red-500 font-bold mb-4">Movie Not Found 😢</h1>
-        <Link to="/" className="text-gray-400 hover:text-white underline">Wapis Home Par Jayein</Link>
+        <h1 className="text-3xl text-red-500 font-bold mb-4">Movie Not Found</h1>
+        <Link to="/" className="text-gray-400 hover:text-white underline">Back To Home</Link>
       </div>
     );
   }
