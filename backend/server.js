@@ -19,6 +19,33 @@ connectDB();
 // Routes
 app.use("/api/movies", movieRoutes);
 
+// Health Check Route
+app.get('/health', async (req, res) => {
+  try {
+    // 1. Check if MongoDB is connected
+    const mongoose = require('mongoose');
+    const dbStatus = mongoose.connection.readyState; 
+    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+
+    if (dbStatus === 1) {
+      // 2. Perform a tiny query to keep DB active
+      // 'User' ki jagah apni kisi bhi collection ka model name likhein
+      // Ye sirf 1 record check karega taake connection refresh ho
+      await mongoose.connection.db.admin().ping(); 
+
+      return res.status(200).json({
+        status: 'active',
+        database: 'connected',
+        message: 'Backend is awake and DB is fresh!'
+      });
+    } else {
+      throw new Error('Database not connected');
+    }
+  } catch (error) {
+    console.error('Health Check Error:', error.message);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
 app.get('/ping', (req, res) => {
     res.send("ok");
 });
