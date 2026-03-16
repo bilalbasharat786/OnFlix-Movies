@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import "dotenv/config";
 import connectDB from "./configs/db.js";
@@ -23,7 +24,6 @@ app.use("/api/movies", movieRoutes);
 app.get('/health', async (req, res) => {
   try {
     // 1. Check if MongoDB is connected
-    const mongoose = require('mongoose');
     const dbStatus = mongoose.connection.readyState; 
     // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
 
