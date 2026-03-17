@@ -51,6 +51,9 @@ const Navbar = () => {
             <Link to="/bollywood" className="text-gray-300 hover:text-white transition font-medium">
               Bollywood
             </Link>
+            <Link to="/tollywood" className="text-gray-300 hover:text-white transition font-medium">
+            South Indian
+            </Link>
           </div>
 
           {/* 3. Search Bar (Universal - Ab Mobile aur Desktop dono par top par rahega) */}
@@ -88,6 +91,9 @@ const Navbar = () => {
             </Link>
             <Link to="/bollywood" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-white font-medium block py-2">
               Bollywood
+            </Link>
+             <Link to="/tollywood" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-white font-medium block py-2">
+              South Indian
             </Link>
           </div>
         </div>

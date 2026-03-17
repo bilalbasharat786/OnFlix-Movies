@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Navbar from './components/Navbar';
 import Hollywood from './pages/Hollywood';
 import Bollywood from './pages/Bollywood';
+import Tollywood from './pages/Tollywood';
 import MovieDetail from './pages/MovieDetail';
 import MoviePlayer from './components/MoviePlayer';
 import Hero from './components/Hero';
@@ -34,6 +35,7 @@ useEffect(() => {
           <Route path="/hero" element={<Hero />} />
           <Route path="/hollywood" element={<Hollywood />} />
           <Route path="/bollywood" element={<Bollywood />} />
+          <Route path="/tollywood" element={<Tollywood />} />
           <Route path="/watch/:id" element={<MovieDetail />} />
           <Route path="/play/:id" element={<MoviePlayer />} />
         </Routes>
