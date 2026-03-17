@@ -51,6 +51,13 @@ const App = () => {
                   <ManageMovies categoryTitle="Hollywood" />
                 </>
               } />
+                
+              <Route path="/admin/manage-tollywood" element={
+                <>
+                  <AdminNavbar />
+                  <ManageMovies categoryTitle="Tollywood" />
+                </>
+              } />
               
             </Route>
 
