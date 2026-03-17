@@ -99,7 +99,7 @@ const Tollywood = () => {
       {/* Header & Filters */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <h1 className="text-2xl md:text-4xl font-bold text-green-500">
-            {searchQuery ? `Search Results for "${searchQuery}"` : "Tollywood Movies"}
+            {searchQuery ? `Search Results for "${searchQuery}"` : "South Indian Movies"}
         </h1>
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
@@ -190,13 +190,13 @@ const Tollywood = () => {
       {loadingMore && (
         <div className="flex justify-center items-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
-          <span className="ml-3 text-green-400 font-bold">Loading more Tollywood movies...</span>
+          <span className="ml-3 text-green-400 font-bold">Loading more South Indian movies...</span>
         </div>
       )}
 
       {!hasMore && movies.length > 0 && !loading && (
         <div className="text-center text-gray-600 py-8 font-semibold">
-          ALL TOLLYWOOD MOVIES LOADED
+          ALL SOUTH INDIAN MOVIES LOADED
         </div>
       )}
     </div>
