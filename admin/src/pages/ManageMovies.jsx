@@ -15,7 +15,7 @@ export default function ManageMovies({ categoryTitle }) {
   const [currentPage, setCurrentPage] = useState(1);
   const moviesPerPage = 20; 
 
-  // Edit Modal states (isHero add kiya hai)
+  // Edit Modal states 
   const [editingMovie, setEditingMovie] = useState(null);
   const [formData, setFormData] = useState({ 
     title: '', posterUrl: '', imdbId: '', customUrl: '', year: '', language: '', category: '', genres: '', rating: '', isHero: false 
@@ -34,8 +34,11 @@ export default function ManageMovies({ categoryTitle }) {
       const response = await axios.get(url);
 
       const filteredMovies = response.data.filter((movie) => {
+        // 🔥 YAHAN TOLLYWOOD KI LOGIC ADD KI HAI
         if (categoryTitle.toLowerCase().includes("bollywood")) {
           return movie.language === 'Hindi' || movie.category === 'Bollywood';
+        } else if (categoryTitle.toLowerCase().includes("tollywood")) {
+          return movie.category === 'Tollywood'; 
         } else {
           return movie.language === 'English' || movie.language === 'Dual Audio' || movie.category === 'Hollywood';
         }
@@ -107,7 +110,7 @@ export default function ManageMovies({ categoryTitle }) {
       customUrl: movie.customUrl || '', year: movie.year || '', 
       language: movie.language || 'Hindi', category: movie.category || 'Bollywood',
       genres: movie.genres || '', rating: movie.rating || '',
-      isHero: movie.isHero || false // 🔥 Load Hero Status
+      isHero: movie.isHero || false 
     });
   };
 
@@ -189,8 +192,23 @@ export default function ManageMovies({ categoryTitle }) {
             
             <div className="flex flex-wrap md:flex-nowrap gap-4 md:col-span-2">
               <div className="w-full md:w-1/3"><label className="block text-gray-400 mb-1">Year</label><input type="number" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} required className="w-full p-3 bg-gray-700 text-white rounded outline-none" /></div>
-              <div className="w-full md:w-1/3"><label className="block text-gray-400 mb-1">Category</label><select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded outline-none"><option>Bollywood</option><option>Hollywood</option><option>Tollywood</option></select></div>
-              <div className="w-full md:w-1/3"><label className="block text-gray-400 mb-1">Language</label><select value={formData.language} onChange={(e) => setFormData({...formData, language: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded outline-none"><option>Hindi</option><option>English</option><option>Dual Audio</option><option>Hindi Dubbed</option></select></div>
+              <div className="w-full md:w-1/3">
+                <label className="block text-gray-400 mb-1">Category</label>
+                <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded outline-none">
+                  <option>Bollywood</option>
+                  <option>Hollywood</option>
+                  <option>Tollywood</option>
+                </select>
+              </div>
+              <div className="w-full md:w-1/3">
+                <label className="block text-gray-400 mb-1">Language</label>
+                <select value={formData.language} onChange={(e) => setFormData({...formData, language: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded outline-none">
+                  <option>Hindi</option>
+                  <option>English</option>
+                  <option>Dual Audio</option>
+                  <option>Hindi Dubbed</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex flex-wrap md:flex-nowrap gap-4 md:col-span-2">
@@ -198,7 +216,6 @@ export default function ManageMovies({ categoryTitle }) {
               <div className="w-full md:w-1/3"><label className="block text-gray-400 mb-1">Rating</label><input type="text" value={formData.rating} onChange={(e) => setFormData({...formData, rating: e.target.value})} className="w-full p-3 bg-gray-700 text-white rounded outline-none" /></div>
             </div>
 
-            {/* 🔥 NAYA: HERO SECTION CHECKBOX (EDIT MODAL MEIN) */}
             <div className="md:col-span-2 p-4 bg-gray-900 border border-red-600 rounded flex items-center gap-3">
                 <input 
                     type="checkbox" 
@@ -218,7 +235,6 @@ export default function ManageMovies({ categoryTitle }) {
         </div>
       )}
 
-      {/* Grid view wese hi rahay ga */}
       {loading ? (
         <div className="text-center text-red-500 py-10 font-bold">Movies loading...</div>
       ) : searchedMovies.length === 0 ? (
@@ -229,30 +245,38 @@ export default function ManageMovies({ categoryTitle }) {
             {currentMovies.map((movie) => {
               const currentStatus = vidStatus[movie._id] || 'checking';
               const badgeClass = currentStatus === 'custom' ? "bg-green-600" : currentStatus === 'working' ? "bg-blue-600" : currentStatus === 'missing' ? "bg-red-600" : "bg-gray-600";
+              
               return (
                 <div key={movie._id} className={`bg-gray-800 rounded-lg overflow-hidden flex flex-col border-2 transition-all ${currentStatus === 'missing' ? 'border-red-600 shadow-lg shadow-red-900/20' : 'border-gray-700'}`}>
-                  <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded text-[10px] font-bold text-white shadow-md bg-black/50 backdrop-blur-sm border border-white/20">
-                     {currentStatus.toUpperCase()}
+                  
+                  {/* Status Badge */}
+                  <div className={`absolute top-2 left-2 z-10 px-2 py-1 rounded text-[10px] font-bold text-white shadow-md backdrop-blur-sm border border-white/20 ${badgeClass}`}>
+                      {currentStatus.toUpperCase()}
                   </div>
-                  <div className="h-56 w-full bg-gray-900"><img src={movie.posterUrl} alt={movie.title} className="w-full h-full object-cover" /></div>
+                  
+                  <div className="h-56 w-full bg-gray-900">
+                    <img src={movie.posterUrl} alt={movie.title} className="w-full h-full object-cover" />
+                  </div>
+                  
                   <div className="p-3 flex flex-col flex-grow">
-                    <h3 className="text-sm font-bold text-white truncate">{movie.title}</h3>
+                    <h3 className="text-sm font-bold text-white truncate" title={movie.title}>{movie.title}</h3>
                     <div className="mt-auto flex gap-1 pt-2">
-                      <button onClick={() => openPreview(movie)} className="bg-yellow-600 text-white flex-1 py-1 rounded text-[10px] font-bold">Check</button>
-                      <button onClick={() => handleEditClick(movie)} className="bg-gray-600 text-white flex-1 py-1 rounded text-[10px] font-bold">Edit</button>
-                      <button onClick={() => handleDelete(movie._id, movie._title)} className="bg-red-600 text-white flex-1 py-1 rounded text-[10px] font-bold">Delete</button>
+                      <button onClick={() => openPreview(movie)} className="bg-yellow-600 text-white flex-1 py-1 rounded text-[10px] font-bold hover:bg-yellow-700 transition">Check</button>
+                      <button onClick={() => handleEditClick(movie)} className="bg-gray-600 text-white flex-1 py-1 rounded text-[10px] font-bold hover:bg-gray-500 transition">Edit</button>
+                      <button onClick={() => handleDelete(movie._id, movie.title)} className="bg-red-600 text-white flex-1 py-1 rounded text-[10px] font-bold hover:bg-red-700 transition">Delete</button>
                     </div>
                   </div>
                 </div>
               );
             })}
           </div>
-          {/* Pagination Controls... (Same as before) */}
+
+          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-4 py-4 border-t border-gray-700">
-                <button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1} className="px-4 py-2 rounded font-bold bg-red-600 text-white disabled:bg-gray-700">Prev</button>
-                <span className="text-white">Page {currentPage} of {totalPages}</span>
-                <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages} className="px-4 py-2 rounded font-bold bg-red-600 text-white disabled:bg-gray-700">Next</button>
+                <button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1} className="px-4 py-2 rounded font-bold bg-red-600 text-white disabled:bg-gray-700 hover:bg-red-700 transition disabled:hover:bg-gray-700">Prev</button>
+                <span className="text-white font-bold">Page {currentPage} of {totalPages}</span>
+                <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages} className="px-4 py-2 rounded font-bold bg-red-600 text-white disabled:bg-gray-700 hover:bg-red-700 transition disabled:hover:bg-gray-700">Next</button>
             </div>
           )}
         </>
