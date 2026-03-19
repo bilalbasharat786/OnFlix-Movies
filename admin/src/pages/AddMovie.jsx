@@ -68,12 +68,11 @@ const AddMovie = () => {
         else if (['te', 'ta', 'ml', 'kn'].includes(ogLang)) { autoCategory = 'Tollywood'; autoLanguage = 'Hindi Dubbed'; } 
         else if (ogLang === 'ko') { autoCategory = 'K-Drama'; autoLanguage = 'Hindi Dubbed'; }
 
-        // 🔥 OMDb HYBRID MAGIC: TMDB data aane ke baad, Title aur Year IMDB (OMDb) se mangwao
+        // 🔥 OMDb HYBRID MAGIC
         let finalTitle = tmdbMovie.title || '';
         let finalYear = tmdbMovie.release_date ? tmdbMovie.release_date.split('-')[0] : new Date().getFullYear();
 
         try {
-          const cleanImdbId = movie.imdbId.trim();
           const omdbUrl = `https://www.omdbapi.com/?i=${movie.imdbId}&apikey=${OMDB_API_KEY}`;
           const omdbRes = await axios.get(omdbUrl);
           
@@ -87,9 +86,9 @@ const AddMovie = () => {
 
         setMovie({
           ...movie,
-          title: finalTitle, // 100% IMDB Accurate
+          title: finalTitle, 
           posterUrl: fullPosterUrl,
-          year: finalYear,   // 100% IMDB Accurate
+          year: finalYear,  
           language: autoLanguage, 
           category: autoCategory,
           genres: fetchedGenres, 
@@ -108,22 +107,24 @@ const AddMovie = () => {
     }
   };
 
-  // === 🚀 VIP HYBRID FUNCTION: Auto-Fetch Top Movies (With Rating & OMDb) ===
+  // === 🚀 VIP HYBRID FUNCTION: Auto-Fetch Hit/Blockbuster Movies ===
   const autoFetchTopMovies = async () => {
     const regionNames = { 'hi': 'Bollywood', 'en': 'Hollywood', 'te': 'Tollywood (Telugu)', 'ta': 'Tollywood (Tamil)', 'ko': 'South Korean' };
     const regionName = regionNames[selectedRegion] || 'Movies';
 
-    const confirmImport = window.confirm(`Kya aap waqai ${selectedBulkYear} ki Top ${selectedMovieCount} ${regionName} movies add karna chahte hain? (TMDB + OMDb Hybrid Mode)`);
+    const confirmImport = window.confirm(`Kya aap waqai ${selectedBulkYear} ki Top ${selectedMovieCount} ${regionName} movies add karna chahte hain? Sirf Hits & Blockbusters add hongi.`);
     if (!confirmImport) return;
 
     setBulkLoading(true);
     let addedCount = 0;
     let skippedCount = 0; 
-    const pagesToFetch = Math.ceil(selectedMovieCount / 20);
+    const pagesToFetch = Math.ceil(selectedMovieCount / 20) * 2; // Extra pages mangwa rahe hain kyunke flops skip hongi
 
     try {
       for (let page = 1; page <= pagesToFetch; page++) {
-        setBulkProgress(`TMDB se Page ${page}/${pagesToFetch} dhoondh raha hoon...`);
+        if (addedCount >= selectedMovieCount) break;
+
+        setBulkProgress(`TMDB se Page ${page} dhoondh raha hoon...`);
         
         const discoverUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=${selectedRegion}&primary_release_year=${selectedBulkYear}&sort_by=popularity.desc&page=${page}`;
         const res = await axios.get(discoverUrl);
@@ -133,18 +134,40 @@ const AddMovie = () => {
           if (addedCount >= selectedMovieCount) break;
 
           try {
-            // Low Rating Filter
-            if (!tmdbMovie.vote_average || tmdbMovie.vote_average < 5.0) {
-              skippedCount++;
-              continue; 
-            }
-
+            // Fetch Full Details to check Budget and Revenue
             const detailUrl = `https://api.themoviedb.org/3/movie/${tmdbMovie.id}?api_key=${TMDB_API_KEY}`;
             const detailRes = await axios.get(detailUrl);
             const fullMovieData = detailRes.data; 
             const imdbId = fullMovieData.imdb_id;
 
             if (!imdbId) continue;
+
+            // ==========================================
+            // 🔥 BOX OFFICE LOGIC (Hit / Flop Checker)
+            // ==========================================
+            const budget = fullMovieData.budget || 0;
+            const revenue = fullMovieData.revenue || 0;
+            let isFlop = false;
+
+            if (budget > 0 && revenue > 0) {
+              // Agar kamayi (revenue) lagat (budget) se kam hai, toh Flop hai
+              if (revenue < budget) {
+                isFlop = true;
+              }
+            } else {
+              // Agar API par budget/revenue 0 hai, toh popularity/votes check karo
+              // Boht kam votes ka matlab hai movie chali nahi (Flop)
+              if (fullMovieData.vote_count < 50) {
+                isFlop = true;
+              }
+            }
+
+            // Agar movie flop hai toh skip kar do
+            if (isFlop) {
+              skippedCount++;
+              continue; 
+            }
+            // ==========================================
 
             const fullPosterUrl = fullMovieData.poster_path ? `https://image.tmdb.org/t/p/w500${fullMovieData.poster_path}` : '';
             const fetchedGenres = fullMovieData.genres ? fullMovieData.genres.map(g => g.name).join(', ') : '';
@@ -161,7 +184,6 @@ const AddMovie = () => {
             let finalYear = fullMovieData.release_date ? fullMovieData.release_date.split('-')[0] : selectedBulkYear;
 
             try {
-              const cleanImdbId = imdbId.trim();
                 const omdbUrl = `https://www.omdbapi.com/?i=${imdbId}&apikey=${OMDB_API_KEY}`;
                 const omdbRes = await axios.get(omdbUrl);
                 
@@ -174,11 +196,11 @@ const AddMovie = () => {
             }
 
             const newMovieData = {
-              title: finalTitle, // Accurate IMDB Title
+              title: finalTitle, 
               posterUrl: fullPosterUrl,
               imdbId: imdbId,
               customUrl: '',
-              year: finalYear,   // Accurate IMDB Year
+              year: finalYear,  
               language: autoLanguage, 
               category: autoCategory, 
               genres: fetchedGenres, 
@@ -187,14 +209,14 @@ const AddMovie = () => {
 
             await axios.post(`${import.meta.env.VITE_API_URL}/api/movies/add`, newMovieData);
             addedCount++;
-            setBulkProgress(`Abhi tak ${addedCount} Hybrid movies add ho gayin...`);
+            setBulkProgress(`Abhi tak ${addedCount} Hits/Blockbusters add ho gayin...`);
             
           } catch (err) {
             console.error(`Movie add karne mein masla (${tmdbMovie.title}):`, err);
           }
         }
       }
-      toast.success(`🎉 Kamal ho gaya! Total ${addedCount} 100% Accurate Movies add huin. (${skippedCount} skip ki gayin)`);
+      toast.success(`🎉 Kamal ho gaya! Total ${addedCount} Hit/Superhit Movies add huin. (${skippedCount} Flops skip ki gayin)`);
     } catch (error) {
       console.error("Bulk Fetching mein error aya:", error);
       toast.error("Auto Fetch ruk gaya, check console! ❌");
@@ -246,7 +268,7 @@ const AddMovie = () => {
       {/* === 🔥 VIP AUTO FETCH BOX === */}
       <div className="mb-8 p-4 bg-gray-900 border-2 border-dashed border-red-500 rounded-lg">
         <h3 className="text-lg md:text-xl text-red-500 font-bold mb-2 text-center">🔥 Auto-Import Magic</h3>
-        <p className="text-xs md:text-sm text-gray-400 mb-4 text-center">TMDB se Poster, OMDb se 100% Accurate Title & Year!</p>
+        <p className="text-xs md:text-sm text-gray-400 mb-4 text-center">Sirf Hits, Superhits & Blockbusters Add Hongi!</p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
           <div>
@@ -270,7 +292,7 @@ const AddMovie = () => {
         </div>
 
         <button type="button" onClick={autoFetchTopMovies} disabled={bulkLoading || loading} className={`w-full py-3 font-bold text-white rounded shadow-lg transition-all ${bulkLoading ? 'bg-gray-600 cursor-not-allowed animate-pulse' : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700'}`}>
-          {bulkLoading ? `Rukiye... ${bulkProgress}` : `🚀 Fetch Hybrid Data (${selectedMovieCount})`}
+          {bulkLoading ? `Rukiye... ${bulkProgress}` : `🚀 Fetch Hit Movies (${selectedMovieCount})`}
         </button>
       </div>
 
