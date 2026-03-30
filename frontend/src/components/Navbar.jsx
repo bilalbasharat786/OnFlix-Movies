@@ -45,6 +45,9 @@ const Navbar = () => {
 
           {/* 2. Desktop Menu (Hollywood, Bollywood) - Sirf bari screen par dikhega */}
           <div className="hidden md:flex space-x-6 items-center">
+            <Link to="/tv-channels" className="text-gray-300 hover:text-white transition font-medium">
+              TV Channels
+            </Link>
             <Link to="/hollywood" className="text-gray-300 hover:text-white transition font-medium">
               Hollywood (Hindi Dubbed)
             </Link>
@@ -86,6 +89,9 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-gray-900 border-t border-gray-800 px-4 pt-2 pb-4 shadow-lg absolute w-full left-0">
           <div className="flex flex-col space-y-3 mt-2">
+            <Link to="/tv-channels" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-white font-medium block py-2 border-b border-gray-800">
+              TV Channels
+            </Link>
             <Link to="/hollywood" onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-white font-medium block py-2 border-b border-gray-800">
               Hollywood (Hindi Dubbed)
             </Link>
