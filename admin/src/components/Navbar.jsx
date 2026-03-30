@@ -32,24 +32,6 @@ const handleLogout = () => {
             <PlusCircle size={18} /> Add Movie
           </Link>
           <Link 
-            to="/admin/add-channel" 
-            className="hover:text-red-500 flex items-center gap-1 transition duration-300"
-          >
-            <PlusCircle size={18} /> Add Channel
-          </Link>
-          <Link 
-            to="/admin/manage-channels" 
-            className="hover:text-red-500 flex items-center gap-1 transition duration-300"
-          >
-            <Film size={18} /> Manage Channels
-          </Link>
-          <Link 
-            to="/admin/channels/edit/:id"
-            className="hover:text-red-500 flex items-center gap-1 transition duration-300"
-          >
-            <Film size={18} /> Edit Channel
-          </Link>
-          <Link 
 
             to="/admin/manage-bollywood" 
             className="hover:text-red-500 flex items-center gap-1 transition duration-300"
@@ -94,27 +76,6 @@ const handleLogout = () => {
             className="hover:text-red-500 font-bold flex items-center gap-3 py-2 border-b border-gray-700"
           >
             <PlusCircle size={20} className="text-red-600" /> Add New Movie
-          </Link>
-          <Link 
-            to="/admin/add-channel" 
-            onClick={closeMenu}
-            className="hover:text-red-500 font-bold flex items-center gap-3 py-2 border-b border-gray-700"
-          >
-            <PlusCircle size={20} className="text-red-600" /> Add New Channel
-          </Link>
-            <Link
-            to="/admin/manage-channels"
-            onClick={closeMenu}
-            className="hover:text-red-500 font-bold flex items-center gap-3 py-2 border-b border-gray-700"
-          >
-            <Film size={20} className="text-red-600" /> Manage Channels
-          </Link>
-          <Link
-            to="/admin/channels/edit/:id"
-            onClick={closeMenu}
-            className="hover:text-red-500 font-bold flex items-center gap-3 py-2 border-b border-gray-700"
-          >
-            <Film size={20} className="text-red-600" /> Edit Channel
           </Link>
           <Link 
             to="/admin/manage-bollywood" 

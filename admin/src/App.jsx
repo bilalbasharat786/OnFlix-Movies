@@ -7,9 +7,6 @@ import AddMovie from './pages/AddMovie';
 import ManageMovies from './pages/ManageMovies';
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from './pages/Login';
-import AddChannel from './pages/AddChannel';
-import ManageChannels from './pages/ManageChannels';
-import EditChannel from './pages/EditChannel';
 
 const App = () => {
   return (
@@ -23,24 +20,6 @@ const App = () => {
             <Route element={<ProtectedRoute />}>             
               <Route path="/" element={<Navigate to="/admin/add-movie" />} />
               <Route path="/admin" element={<Navigate to="/admin/add-movie" />} />
-              <Route path="/admin/add-channel" element={
-                <>
-                  <AdminNavbar />
-                  <AddChannel />
-                </>
-              } />
-              <Route path="/admin/manage-channels" element={
-                <>
-                  <AdminNavbar />
-                  <ManageChannels />
-                </>
-              } />
-              <Route path="/admin/channels/edit/:id" element={
-                <>
-                  <AdminNavbar />
-                  <EditChannel />
-                </>
-              } />
 
               {/* Asal Pages Ke Routes (In sab ke sath Navbar laga diya hai taake login ke baad hi dikhe) */}
               <Route path="/admin/add-movie" element={

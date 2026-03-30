@@ -4,7 +4,6 @@ import cors from "cors";
 import "dotenv/config";
 import connectDB from "./configs/db.js";
 import movieRoutes from "./routes/movieRoutes.js";
-import channelRoutes from './routes/channelRoutes.js';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,7 +19,6 @@ connectDB();
 
 // Routes
 app.use("/api/movies", movieRoutes);
-app.use('/api/channels', channelRoutes);
 
 // Health Check Route
 app.get('/health', async (req, res) => {
