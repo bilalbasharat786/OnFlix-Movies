@@ -67,21 +67,32 @@ const TvPlayer = () => {
           
           {/* Responsive Player Wrapper (16:9 Aspect Ratio) */}
           <div className="relative w-full aspect-video">
-            <ReactPlayer
-              url={channel.links?.web} // Apke database se m3u8 link
-              playing={false} // Auto-play
-              muted={true}
-              controls={true} // Volume, Fullscreen, Play/Pause controls
-              width="100%"
-              height="100%"
-              className="absolute top-0 left-0"
-              config={{
-                file: {
-                  forceHLS: true, // Force karta hai m3u8 format ko chalane ke liye
-                }
-              }}
-            />
-          </div>
+  {channel.links?.web ? (
+    <ReactPlayer
+      url={channel.links.web}
+      playing={true} 
+      muted={true} 
+      controls={true}
+      width="100%"
+      height="100%"
+      className="absolute top-0 left-0"
+      config={{
+        file: {
+          forceHLS: true, // 🔥 YEH SAB SE ZAROORI HAI
+          forceVideo: true,
+          attributes: {
+            preload: 'auto'
+          }
+        }
+      }}
+      onError={(e) => console.log("Player Error: ", e)} // Yeh line check karegi agar stream mein masla hua
+    />
+  ) : (
+    <div className="flex justify-center items-center w-full h-full bg-gray-900 text-gray-500">
+      Video Link Not Found
+    </div>
+  )}
+</div>
         </div>
 
         {/* Channel Information Section */}
