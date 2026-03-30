@@ -7,9 +7,9 @@ import AddMovie from './pages/AddMovie';
 import ManageMovies from './pages/ManageMovies';
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from './pages/Login';
-import AddChannel from './pages/admin/AddChannel';
-import ManageChannels from './pages/admin/ManageChannels';
-import EditChannel from './pages/admin/EditChannel';
+import AddChannel from './pages/AddChannel';
+import ManageChannels from './pages/ManageChannels';
+import EditChannel from './pages/EditChannel';
 
 const App = () => {
   return (
