@@ -69,7 +69,7 @@ const TvPlayer = () => {
           <div className="relative w-full aspect-video">
             <ReactPlayer
               url={channel.links?.web} // Apke database se m3u8 link
-              playing={true} // Auto-play
+              playing={false} // Auto-play
               muted={true}
               controls={true} // Volume, Fullscreen, Play/Pause controls
               width="100%"
