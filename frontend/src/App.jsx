@@ -10,6 +10,7 @@ import MoviePlayer from './components/MoviePlayer';
 import Hero from './components/Hero';
 import { useEffect } from 'react';
 import TvChannels from './pages/TvChannels';
+import TvPlayer from './pages/TvPlayer';
 // Note: Ab humein Player.jsx ki zaroorat nahi kyunke MovieDetail mein hi player laga hua hai!
 
 const App = () => {
@@ -35,6 +36,7 @@ useEffect(() => {
           <Route path="/" element={<Home />} />
           <Route path="/hero" element={<Hero />} />
           <Route path="/tv-channels" element={<TvChannels />} />
+          <Route path="/watch/channel/:id" element={<TvPlayer />} />
           <Route path="/hollywood" element={<Hollywood />} />
           <Route path="/bollywood" element={<Bollywood />} />
           <Route path="/tollywood" element={<Tollywood />} />
